@@ -79,7 +79,7 @@ def split_race_ids():
     training_races = []
     test_races = []
     for year, items in races_by_year.items():
-        if int(year) > 2014:
+        if int(year) > 1980:
             train_results_len = int(0.9 * len(items))
             random.shuffle(items)
             training_races += items[:train_results_len]
@@ -120,7 +120,7 @@ def get_average_change(race, driver):
                 qualifying_lap = qualifying[season_race][driver]
                 previous_qualifying_lap = get_previous_qualifying_result(season_race, driver)
                 if previous_qualifying_lap:
-                    diff = previous_qualifying_lap - qualifying_lap
+                    diff = qualifying_lap - previous_qualifying_lap
                     total += diff
                     count += 1
         if count > 0:
@@ -190,7 +190,7 @@ model = tf.estimator.DNNRegressor(
         l1_regularization_strength=0.001
     ))
 
-with open('training-log.csv', 'w') as stream:
+''''with open('training-log.csv', 'w') as stream:
     csvwriter = csv.writer(stream)
 
     for i in range(0, 200):
@@ -201,13 +201,13 @@ with open('training-log.csv', 'w') as stream:
 
         print(evaluation_result)
 
-        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])
+        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])'''
 
 
 test_features1 = {
     'race': np.array(['british']),
-    'lap': np.array([85.093]),
-    'change': np.array([0.800])
+    'lap': np.array([85.990]),
+    'change': np.array([-0.234])
 }
 
 test_input_fn1 = tf.estimator.inputs.numpy_input_fn(
