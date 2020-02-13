@@ -142,10 +142,12 @@ def get_results(races):
                 previous_result = get_previous_qualifying_result(race, driver)
                 average_change = get_average_change(race, driver)
                 if previous_result and average_change:
-                    results['lap'].append(previous_result)
-                    results['result'].append(qualifying[race][driver])
-                    results['race'].append(race_list[race])
-                    results['change'].append(average_change)
+                    diff = previous_result - qualifying[race][driver]
+                    if diff > -3:
+                        results['lap'].append(previous_result)
+                        results['result'].append(qualifying[race][driver])
+                        results['race'].append(race_list[race])
+                        results['change'].append(average_change)
     for key in results.keys():
         results[key] = np.array(results[key])
     return results, results['result']
@@ -188,7 +190,7 @@ model = tf.estimator.DNNRegressor(
         l1_regularization_strength=0.001
     ))
 
-'''with open('training-log.csv', 'w') as stream:
+with open('training-log.csv', 'w') as stream:
     csvwriter = csv.writer(stream)
 
     for i in range(0, 200):
@@ -199,13 +201,13 @@ model = tf.estimator.DNNRegressor(
 
         print(evaluation_result)
 
-        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])'''
+        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])
 
 
 test_features1 = {
     'race': np.array(['british']),
-    'lap': np.array([89.607]),
-    'change': np.array([-0.800])
+    'lap': np.array([85.093]),
+    'change': np.array([0.800])
 }
 
 test_input_fn1 = tf.estimator.inputs.numpy_input_fn(
