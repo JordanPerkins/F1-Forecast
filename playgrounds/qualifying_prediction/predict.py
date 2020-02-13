@@ -146,6 +146,8 @@ def get_results(races):
                     results['result'].append(qualifying[race][driver])
                     results['race'].append(race_list[race])
                     results['change'].append(average_change)
+    for key in results.keys():
+        results[key] = np.array(results[key])
     return results, results['result']
 
 
@@ -169,7 +171,7 @@ test_input_fn = tf.estimator.inputs.numpy_input_fn(
 )
 
 race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
-      'race', sorted(race_list.values()))
+      'race', sorted(list(set(race_list.values()))))
 
 feature_columns = [
     tf.feature_column.numeric_column(key='change'),
@@ -186,7 +188,7 @@ model = tf.estimator.DNNRegressor(
         l1_regularization_strength=0.001
     ))
 
-with open('training-log.csv', 'w') as stream:
+'''with open('training-log.csv', 'w') as stream:
     csvwriter = csv.writer(stream)
 
     for i in range(0, 200):
@@ -195,7 +197,27 @@ with open('training-log.csv', 'w') as stream:
 
         predictions = list(model.predict(input_fn=test_input_fn))
 
-        csvwriter.writerow([(i + 1) * 100, evaluation_result['accuracy'], evaluation_result['average_loss']])
+        print(evaluation_result)
+
+        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])'''
+
+
+test_features1 = {
+    'race': np.array(['british']),
+    'lap': np.array([89.607]),
+    'change': np.array([-0.800])
+}
+
+test_input_fn1 = tf.estimator.inputs.numpy_input_fn(
+    x=test_features1,
+    num_epochs=1,
+    shuffle=False
+)
+
+
+predictions = model.predict(input_fn=test_input_fn1)
+
+print(list(predictions))
 
 
 
