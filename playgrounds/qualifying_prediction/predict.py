@@ -188,6 +188,25 @@ def get_season_change(race):
             return round(total/count, 3)
     return None
 
+def get_average_change_by_differences_at_that_point(race, driver):
+    total = 0
+    count = 0
+    if race in years_by_race:
+        year = years_by_race[race]
+        races_in_year = races_by_year[year]
+        for season_race in races_in_year:
+            if season_race <= race:
+                if season_race in qualifying_as_differences and driver in qualifying_as_differences[season_race]:
+                    qualifying_lap = qualifying_as_differences[season_race][driver]
+                    previous_qualifying_lap = get_previous_qualifying_result_as_differences(season_race, driver)
+                    if previous_qualifying_lap:
+                        diff = qualifying_lap - previous_qualifying_lap
+                        total += diff
+                        count += 1
+            if count > 0:
+                return round(total/count, 3)
+        return None
+
 
 def get_fastest_qualifying_lap():
     result = {}
@@ -214,7 +233,7 @@ def get_results(races):
             race_results = positions[race]
             for driver, position in race_results.items():
                 previous_result = get_previous_qualifying_result_as_differences(race, driver)
-                average_change = get_average_change_by_differences(race, driver)
+                average_change = get_average_change_by_differences_at_that_point(race, driver)
                 season_change = get_season_change(race)
                 if previous_result and average_change and season_change:
                     results['fastest_lap'].append(fastest_laps[race])
@@ -267,7 +286,7 @@ model = tf.estimator.DNNRegressor(
         l1_regularization_strength=0.001
     ))
 
-with open('training-log.csv', 'w') as stream:
+'''with open('training-log.csv', 'w') as stream:
     csvwriter = csv.writer(stream)
 
     for i in range(0, 200):
@@ -278,13 +297,13 @@ with open('training-log.csv', 'w') as stream:
 
         print(evaluation_result)
 
-        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])
+        csvwriter.writerow([(i + 1) * 100, evaluation_result['loss'], evaluation_result['average_loss']])'''
 
 
 test_features1 = {
     'race': np.array(['british', 'british', 'british','british', 'british', 'british','british', 'british']),
     'lap': np.array([0.325, 0.000,1.987,0.710,2.461,0.044, 1.207, 2.009]),
-    'change': np.array([-1.113, -2.855, -1.738, -2.362, -1.641, -2.3, -1.556, -0.905]),
+    'change': np.array([-0.339, -0.12, -1.076, 0.078, -0.988, 0.734, 1.569, 1.364]),
     'fastest_lap': np.array([85.892,85.892,85.892,85.892,85.892,85.892,85.892,85.892]),
     'season_change': np.array([-1.817, -1.817, -1.817, -1.817, -1.817, -1.817, -1.817, -1.817])
 }
@@ -313,9 +332,17 @@ differences = []
 
 print(sorted_results)
 
-'''for item in sorted_results:
+for item in sorted_results:
     differences.append(item[1]-fastest_lap)
 
-print(differences)'''
+print(differences)
 
+'''print(get_average_change_by_differences_at_that_point('1019', '822'))
+print(get_average_change_by_differences_at_that_point('1019', '1'))
+print(get_average_change_by_differences_at_that_point('1019', '844'))
+print(get_average_change_by_differences_at_that_point('1019', '830'))
+print(get_average_change_by_differences_at_that_point('1019', '842'))
+print(get_average_change_by_differences_at_that_point('1019', '20'))
+print(get_average_change_by_differences_at_that_point('1019', '817'))
+print(get_average_change_by_differences_at_that_point('1019', '807'))'''
 
