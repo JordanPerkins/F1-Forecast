@@ -3,6 +3,8 @@ import tarfile
 import os
 import boto3
 import tensorflow as tf
+import numpy as np
+import glob
 
 s3 = boto3.client('s3')
 
@@ -16,6 +18,7 @@ BUCKET = 'f1forecastmodels'
 def fetch_model():
     s3.download_file(BUCKET, 'model.tar.gz', FILE_DIR+'model.tar.gz')
     tarfile.open(FILE_DIR+'model.tar.gz', 'r').extractall(FILE_DIR)
+    print(glob.glob("/tmp/*"))
 
 def predict():
     race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
@@ -59,7 +62,9 @@ def predict():
         for position in range(0,11):
             if position not in results:
                 results[position] = []
-            results[position].append(pred_dict['probabilities'][position])
+            results[position].append(pred_dict['probabilities'][position].item())
+
+    print(type(results[0][0]))
 
     return results
 
