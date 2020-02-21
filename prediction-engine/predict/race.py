@@ -7,11 +7,13 @@ from ..common import race_model
 from flask import abort, jsonify
 import logging
 import traceback
+from ..common.db import Database
 
 # import request
 
 def predict():
     model = race_model.retrieve_model()
+    db = Database.getDatabase();
 
     test_features1 = {
         'race': np.array(['british', 'british', 'british', 'british', 'british', 'british', 'british', 'british', 'british', 'british']),

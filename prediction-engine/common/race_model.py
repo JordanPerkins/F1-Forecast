@@ -1,12 +1,11 @@
 import tensorflow as tf
 import numpy as np
 from .s3 import fetch_race_model
-
-race_list = ['abu dhabi', 'argentine', 'australian', 'austrian', 'azerbaijan', 'bahrain', 'belgian', 'brazilian', 'british', 'caesars palace', 'canadian', 'chinese', 'dallas', 'detroit', 'dutch', 'european', 'french', 'german', 'hungarian', 'indian', 'indianapolis 500', 'italian', 'japanese', 'korean', 'luxembourg', 'malaysian', 'mexican', 'mexico city', 'monaco', 'moroccan', 'pacific', 'pescara', 'portuguese', 'russian', 'san marino', 'singapore', 'south african', 'spanish', 'swedish', 'swiss', 'turkish', 'united states', 'united states  west', 'vietnamese']
+from .sql import race_features
 
 def retrieve_model():
     race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
-        'race', race_list)
+        'race', sorted(race_features.get_race_list()))
 
     feature_columns = [
         tf.feature_column.numeric_column(key='qualifying'),

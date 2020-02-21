@@ -1,5 +1,9 @@
 from flask import Flask
 from .race import race_prediction
+from ..common.db import Database
+
+# Intialise DB singleton
+Database()
 
 application = Flask(__name__)
 
