@@ -26,11 +26,11 @@ class Database:
             Database()
         return Database.__instance
 
-    def get_race_list():
-        cursor = db.cursor()
+    def get_race_list(self):
+        cursor = self.db.cursor()
         query = ("SELECT DISTINCT REPLACE(LOWER(name), ' grand prix', '') FROM races ORDER BY raceId;")
         cursor.execute(query)
-        return list(cursor)
+        return [item[0] for item in cursor]
 
     def __init__(self):
         if Database.__instance == None:

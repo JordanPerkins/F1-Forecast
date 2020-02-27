@@ -13,7 +13,6 @@ from ..common.db import Database
 
 def predict():
     model = race_model.retrieve_model()
-    db = Database.getDatabase();
 
     test_features1 = {
         'race': np.array(['british', 'british', 'british', 'british', 'british', 'british', 'british', 'british', 'british', 'british']),
