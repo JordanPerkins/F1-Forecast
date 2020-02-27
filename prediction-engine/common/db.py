@@ -30,7 +30,34 @@ class Database:
         cursor = self.db.cursor()
         query = ("SELECT DISTINCT REPLACE(LOWER(name), ' grand prix', '') FROM races ORDER BY raceId;")
         cursor.execute(query)
-        return [item[0] for item in cursor]
+        result = cursor.fetchall()
+        return [item[0] for item in result]
+
+    def get_next_race_id(self):
+        cursor = self.db.cursor()
+        query = ("SELECT MAX(raceId)+1 FROM results;")
+        cursor.execute(query)
+        return cursor.fetchone()[0]
+
+    def get_race_name(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT REPLACE(LOWER(name), ' grand prix', '') FROM races WHERE raceId = %s;")
+        cursor.execute(query, (id,))
+        return cursor.fetchone()[0]
+
+    def get_drivers_in_race(self, id):
+        cursor = self.db.cursor()
+        query =  ("SELECT drivers.* FROM results INNER JOIN drivers ON results.driverId=drivers.driverId WHERE results.raceId=%s ORDER BY results.driverId;")
+        cursor.execute(query, (id,))
+        return cursor.fetchall()
+
+    def get_qualifying_results(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT COALESCE(NULLIF(q3, ''), NULLIF(q2, ''), NULLIF(q1, '')) FROM qualifying WHERE raceId=%s ORDER BY driverId;")
+        cursor.execute(query, (id,))
+        result = cursor.fetchall()
+        return [item[0] for item in result]
+
 
     def __init__(self):
         if Database.__instance == None:

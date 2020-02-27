@@ -8,20 +8,40 @@ from flask import abort, jsonify
 import logging
 import traceback
 from ..common.db import Database
+from ..common import utils
 
 # import request
 
-def predict():
+db = Database.get_database()
+
+def predict(race_id):
+    race = race_id
+    if race is None:
+        race = db.get_next_race_id()
+
+    race_name = db.get_race_name(race)
+
+    logging.info("Making prediction for race with ID "+str(race)+" and name "+str(race_name))
+
+    drivers_to_predict = db.get_drivers_in_race(race - 1)
+
+    qualifying_results = db.get_qualifying_results(race)
+    if len(qualifying_results) != len(drivers_to_predict):
+        logging.info("Qualifying results not available, so will make prediction")
+    qualifying_deltas = utils.convert_to_deltas(qualifying_results)
+    qualifying_grid = [x+1 for x in sorted(range(len(qualifying_deltas)), key=qualifying_deltas.__getitem__)]
+    print(qualifying_grid)
+
     model = race_model.retrieve_model()
 
-    test_features1 = {
-        'race': np.array(['british', 'british', 'british', 'british', 'british', 'british', 'british', 'british', 'british', 'british']),
-        'qualifying': np.array([0.000, 0.006, 0.079, 0.183, 0.497, 0.694, 1.089, 1.131, 1.242, 1.293]),
-        'grid': np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    features = {
+        'race': np.array([race_name] * len(drivers_to_predict)),
+        'qualifying': np.array(qualifying_deltas),
+        'grid': np.array(qualifying_grid)
     }
 
-    test_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x=test_features1,
+    input_fn = tf.estimator.inputs.numpy_input_fn(
+        x=features,
         num_epochs=1,
         shuffle=False
     )
@@ -29,7 +49,7 @@ def predict():
 
     results = {}
 
-    predictions = model.predict(input_fn=test_input_fn)
+    predictions = model.predict(input_fn=input_fn)
     for pred_dict in predictions:
         class_id = pred_dict['class_ids'][0]
         for position in range(0,11):
@@ -37,13 +57,11 @@ def predict():
                 results[position] = []
             results[position].append(pred_dict['probabilities'][position].item())
 
-    print(type(results[0][0]))
-
     return results
 
-def race_prediction():
+def race_prediction(race_id=None):
     try:
-        result = predict()
+        result = predict(race_id)
         return jsonify(result)
     except Exception as e:
         logging.error('An error occured retrieving race prediction: '+str(e))
