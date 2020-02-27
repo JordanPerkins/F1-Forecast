@@ -29,8 +29,9 @@ def predict(race_id):
     if len(qualifying_results) != len(drivers_to_predict):
         logging.info("Qualifying results not available, so will make prediction")
     qualifying_deltas = utils.convert_to_deltas(qualifying_results)
-    qualifying_grid = [x+1 for x in sorted(range(len(qualifying_deltas)), key=qualifying_deltas.__getitem__)]
+    qualifying_grid = sorted(range(len(qualifying_deltas)), key=qualifying_deltas.__getitem__, reverse=True)
     print(qualifying_grid)
+    print(qualifying_deltas)
 
     model = race_model.retrieve_model()
 
@@ -46,18 +47,11 @@ def predict(race_id):
         shuffle=False
     )
 
-
-    results = {}
-
     predictions = model.predict(input_fn=input_fn)
-    for pred_dict in predictions:
-        class_id = pred_dict['class_ids'][0]
-        for position in range(0,11):
-            if position not in results:
-                results[position] = []
-            results[position].append(pred_dict['probabilities'][position].item())
+    ranking = utils.results_to_ranking(predictions, len(drivers_to_predict))
+    driver_ranking = [drivers_to_predict[position[1]] for position in ranking]
 
-    return results
+    return driver_ranking
 
 def race_prediction(race_id=None):
     try:
