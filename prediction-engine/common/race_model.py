@@ -1,11 +1,11 @@
 import tensorflow as tf
 import numpy as np
 from .s3 import fetch_race_model
-from .sql import race_features
+from .db import Database
 
 def retrieve_model():
     race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
-        'race', sorted(race_features.get_race_list()))
+        'race', sorted(Database.get_database().get_race_list()))
 
     feature_columns = [
         tf.feature_column.numeric_column(key='qualifying'),

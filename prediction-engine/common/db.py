@@ -20,14 +20,19 @@ class Database:
     __instance = None
 
     @staticmethod
-    def getDatabase():
+    def get_database():
         """ Static access method. """
         if Database.__instance == None:
             Database()
-        return Database.__instance.db
+        return Database.__instance
+
+    def get_race_list():
+        cursor = db.cursor()
+        query = ("SELECT DISTINCT REPLACE(LOWER(name), ' grand prix', '') FROM races ORDER BY raceId;")
+        cursor.execute(query)
+        return list(cursor)
 
     def __init__(self):
-        """ Virtually private constructor. """
         if Database.__instance == None:
             self.db = connect()
             Database.__instance = self
