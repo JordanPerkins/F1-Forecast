@@ -28,8 +28,7 @@ def predict(race_id):
     qualifying_results = db.get_qualifying_results(race)
     if len(qualifying_results) != len(drivers_to_predict):
         logging.info("Qualifying results not available, so will make prediction")
-    qualifying_deltas = utils.convert_to_deltas(qualifying_results)
-    qualifying_grid = utils.deltas_to_ranking(qualifying_deltas)
+    qualifying_deltas, qualifying_grid = utils.process_qualifying_results(qualifying_results)
     print(qualifying_grid)
     print(qualifying_deltas)
 

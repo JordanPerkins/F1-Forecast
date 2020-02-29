@@ -1,11 +1,23 @@
-
-import numpy as np
+import math
 
 def convert_to_deltas(results):
-    laps_in_seconds = [float(item.split(':')[0])*60 + float(item.split(':')[1]) for item in results]
-    fastest_lap = min(laps_in_seconds)
-    print(fastest_lap)
-    return [round(item - fastest_lap, 3) for item in laps_in_seconds]
+    laps_in_seconds = [(float(item.split(':')[0])*60 + float(item.split(':')[1])) if item is not None else None for item in results]
+    fastest_lap = min([item for item in laps_in_seconds if item is not None])
+    return [round(item - fastest_lap, 3) if item is not None else None for item in laps_in_seconds]
+
+def deltas_to_ranking(deltas):
+    deltas_with_inf = [item if item is not None else math.inf for item in deltas]
+    lap_ordering = sorted(range(len(deltas_with_inf)), key=deltas_with_inf.__getitem__)
+    ranking = sorted(range(len(lap_ordering)), key=lap_ordering.__getitem__)
+    return [ranking + 1 for ranking in ranking]
+
+def process_qualifying_results(results):
+    deltas = convert_to_deltas(results)
+    deltas_without_none = [item for item in deltas if item is not None]
+    delta_average = sum(deltas_without_none) / len(deltas_without_none)
+    deltas_with_none_replaced = [item if item is not None else delta_average for item in deltas]
+    ranking = deltas_to_ranking(deltas)
+    return deltas_with_none_replaced, ranking
 
 def get_result_as_tuples(predictions, number_of_drivers):
     by_position = {}
@@ -31,11 +43,6 @@ def results_to_ranking(predictions, number_of_drivers):
         ranked_positions.append(max_tuple[0])
         ranked_drivers.append(max_tuple[1])
         ranking.append(max_tuple)
-        tuples = list(filter(lambda x: (x[0] not in ranked_positions and x[1] not in ranked_drivers), tuples))
+        tuples = [item for item in tuples if item[0] not in ranked_positions and item[1] not in ranked_drivers]
     sorted_ranking = sorted(ranking, key=lambda item: item[0])
     return sorted_ranking
-
-def deltas_to_ranking(deltas):
-    lap_ordering = sorted(range(len(deltas)), key=deltas.__getitem__)
-    ranking = sorted(range(len(lap_ordering)), key=lap_ordering.__getitem__)
-    return [ranking + 1 for ranking in ranking]
