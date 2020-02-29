@@ -34,3 +34,8 @@ def results_to_ranking(predictions, number_of_drivers):
         tuples = list(filter(lambda x: (x[0] not in ranked_positions and x[1] not in ranked_drivers), tuples))
     sorted_ranking = sorted(ranking, key=lambda item: item[0])
     return sorted_ranking
+
+def deltas_to_ranking(deltas):
+    lap_ordering = sorted(range(len(deltas)), key=deltas.__getitem__)
+    ranking = sorted(range(len(lap_ordering)), key=lap_ordering.__getitem__)
+    return [ranking + 1 for ranking in ranking]
