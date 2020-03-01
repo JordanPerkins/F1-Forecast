@@ -26,6 +26,9 @@ class Database:
             Database()
         return Database.__instance
 
+    def __list_query(self, items):
+        return ','.join(['%s'] * len(items))
+
     def get_race_list(self):
         cursor = self.db.cursor()
         query = ("SELECT DISTINCT REPLACE(LOWER(name), ' grand prix', '') FROM races ORDER BY raceId;")
@@ -39,6 +42,12 @@ class Database:
         cursor.execute(query)
         return cursor.fetchone()[0]
 
+    def get_next_qualifying_race_id(self):
+        cursor = self.db.cursor()
+        query = ("SELECT MAX(raceId)+1 FROM qualifying;")
+        cursor.execute(query)
+        return cursor.fetchone()[0]
+
     def get_race_name(self, id):
         cursor = self.db.cursor()
         query = ("SELECT REPLACE(LOWER(name), ' grand prix', '') FROM races WHERE raceId = %s;")
@@ -47,17 +56,40 @@ class Database:
 
     def get_drivers_in_race(self, id):
         cursor = self.db.cursor()
-        query =  ("SELECT drivers.* FROM results INNER JOIN drivers ON results.driverId=drivers.driverId WHERE results.raceId=%s ORDER BY results.driverId;")
+        query =  ("SELECT drivers.* FROM results INNER JOIN drivers ON results.driverId=drivers.driverId WHERE results.raceId=%s;")
         cursor.execute(query, (id,))
         return cursor.fetchall()
 
-    def get_qualifying_results(self, id):
+    def get_drivers_in_qualifying(self, id):
         cursor = self.db.cursor()
-        query = ("SELECT COALESCE(NULLIF(q3, ''), NULLIF(q2, ''), NULLIF(q1, '')) FROM qualifying WHERE raceId=%s ORDER BY driverId;")
+        query =  ("SELECT drivers.* FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE qualifying.raceId=%s;")
         cursor.execute(query, (id,))
-        result = cursor.fetchall()
-        return [item[0] for item in result]
+        return cursor.fetchall()
 
+    def get_qualifying_results_with_driver(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT drivers.*, COALESCE(NULLIF(qualifying.q3, ''), NULLIF(qualifying.q2, ''), NULLIF(qualifying.q1, '')) FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE raceId=%s;")
+        cursor.execute(query, (id,))
+        return cursor.fetchall()
+
+    def get_previous_year_race_by_id(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT raceId FROM races WHERE circuitId = (SELECT circuitId FROM races WHERE raceId = %s) AND year = (SELECT year - 1 FROM races where raceId = %s)")
+        cursor.execute(query, (id,id))
+        result = cursor.fetchone()
+        return result if result is None else result[0]
+
+    def get_qualifying_driver_replacements(self, driver_ids_present, previous_race_id, driver_ids_missing, current_race_id):
+        cursor = self.db.cursor()
+        query = ("""
+            SELECT qualifying.driverId, qualifying1.driverId FROM qualifying
+            INNER JOIN qualifying qualifying1 ON qualifying.constructorId=qualifying1.constructorId
+            AND qualifying1.raceId=%s
+            AND qualifying1.driverId NOT IN (""" + self.__list_query(driver_ids_present) + """)
+            WHERE qualifying.driverId IN (""" + self.__list_query(driver_ids_missing) + """)
+            AND qualifying.raceId = %s;""")
+        cursor.execute(query, (previous_race_id,) + tuple(driver_ids_present) + tuple(driver_ids_missing) + (current_race_id,))
+        return cursor.fetchall()
 
     def __init__(self):
         if Database.__instance == None:
