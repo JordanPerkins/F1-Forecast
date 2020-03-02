@@ -1,9 +1,12 @@
 import math
+from collections import defaultdict 
+from operator import itemgetter 
+from itertools import groupby 
 
 def convert_to_deltas(results):
     laps_in_seconds = [(float(item.split(':')[0])*60 + float(item.split(':')[1])) if item is not None else None for item in results]
     fastest_lap = min([item for item in laps_in_seconds if item is not None])
-    return [round(item - fastest_lap, 3) if item is not None else None for item in laps_in_seconds]
+    return [round(item - fastest_lap, 3) if item is not None else None for item in laps_in_seconds], fastest_lap
 
 def deltas_to_ranking(deltas):
     deltas_with_inf = [item if item is not None else math.inf for item in deltas]
@@ -12,12 +15,12 @@ def deltas_to_ranking(deltas):
     return [ranking + 1 for ranking in ranking]
 
 def process_qualifying_results(results):
-    deltas = convert_to_deltas(results)
+    deltas, fastest_lap = convert_to_deltas(results)
     deltas_without_none = [item for item in deltas if item is not None]
     delta_average = sum(deltas_without_none) / len(deltas_without_none)
     deltas_with_none_replaced = [item if item is not None else delta_average for item in deltas]
     ranking = deltas_to_ranking(deltas)
-    return deltas_with_none_replaced, ranking
+    return deltas_with_none_replaced, ranking, fastest_lap
 
 def get_result_as_tuples(predictions, number_of_drivers):
     by_position = {}
@@ -46,3 +49,7 @@ def results_to_ranking(predictions, number_of_drivers):
         tuples = [item for item in tuples if item[0] not in ranked_positions and item[1] not in ranked_drivers]
     sorted_ranking = sorted(ranking, key=lambda item: item[0])
     return sorted_ranking
+
+def tuples_to_dictionary(tuples):
+    return dict((list(item)[0], list(item)[1:]) for item in tuples)
+

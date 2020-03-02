@@ -60,12 +60,6 @@ class Database:
         cursor.execute(query, (id,))
         return cursor.fetchall()
 
-    def get_drivers_in_qualifying(self, id):
-        cursor = self.db.cursor()
-        query =  ("SELECT drivers.* FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE qualifying.raceId=%s;")
-        cursor.execute(query, (id,))
-        return cursor.fetchall()
-
     def get_qualifying_results_with_driver(self, id):
         cursor = self.db.cursor()
         query = ("SELECT drivers.*, COALESCE(NULLIF(qualifying.q3, ''), NULLIF(qualifying.q2, ''), NULLIF(qualifying.q1, '')) FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE raceId=%s;")
@@ -74,8 +68,8 @@ class Database:
 
     def get_previous_year_race_by_id(self, id):
         cursor = self.db.cursor()
-        query = ("SELECT raceId FROM races WHERE circuitId = (SELECT circuitId FROM races WHERE raceId = %s) AND year = (SELECT year - 1 FROM races where raceId = %s)")
-        cursor.execute(query, (id,id))
+        query = ("SELECT races1.raceId FROM races INNER JOIN races races1 ON races1.year=races.year-1 AND races1.circuitId=races.circuitId WHERE races.raceId = %s;")
+        cursor.execute(query, (id,))
         result = cursor.fetchone()
         return result if result is None else result[0]
 
