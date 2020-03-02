@@ -27,7 +27,7 @@ def predict(race_id):
         
         logging.info("Qualifying results not available, so will make prediction")
 
-    qualifying_deltas, qualifying_grid = process_qualifying_results(qualifying_results_list)
+    qualifying_deltas, qualifying_grid, fastest_lap = process_qualifying_results(qualifying_results_list)
 
     model = retrieve_race_model()
 
