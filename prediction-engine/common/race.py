@@ -6,6 +6,7 @@ import logging
 import traceback
 from .db import Database
 from .utils import process_qualifying_results, results_to_ranking
+from .qualifying import predict as qualifying_predict
 
 db = Database.get_database()
 
@@ -22,12 +23,13 @@ def predict(race_id):
     if len(qualifying_results) > 0:
         drivers_to_predict = [list(result)[:len(result) - 1] for result in qualifying_results]
         qualifying_results_list = [list(result)[len(result) - 1] for result in qualifying_results]
+        qualifying_deltas, qualifying_grid, fastest_lap = process_qualifying_results(qualifying_results_list)
     else:
-        drivers_to_predict = db.get_drivers_in_race(race - 1)
-        
+        qualifying_results = qualifying_predict(race)
+        drivers_to_predict = [list(result)[:len(result) - 1] for result in qualifying_results]
+        qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
+        qualifying_grid = list(range(1, len(drivers_to_predict) + 1))
         logging.info("Qualifying results not available, so will make prediction")
-
-    qualifying_deltas, qualifying_grid, fastest_lap = process_qualifying_results(qualifying_results_list)
 
     model = retrieve_race_model()
 

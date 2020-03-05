@@ -51,5 +51,10 @@ def results_to_ranking(predictions, number_of_drivers):
     return sorted_ranking
 
 def tuples_to_dictionary(tuples):
-    return dict((list(item)[0], list(item)[1:]) for item in tuples)
+    result = {}
+    for item in tuples:
+        if item[0] not in result:
+            result[item[0]] = []
+        result[item[0]].append(item[1:])
+    return result
 

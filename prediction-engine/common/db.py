@@ -85,6 +85,18 @@ class Database:
         cursor.execute(query, (previous_race_id,) + tuple(driver_ids_present) + tuple(driver_ids_missing) + (current_race_id,))
         return cursor.fetchall()
 
+    def get_all_laps_prior_to_race(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT qualifying.driverId,races1.circuitId,COALESCE(NULLIF(qualifying.q3, ''), NULLIF(qualifying.q2, ''), NULLIF(qualifying.q1, '')) FROM races INNER JOIN races races1 ON races1.year=races.year INNER JOIN qualifying ON qualifying.raceId=races1.raceId  WHERE races.raceId = %s AND races1.raceId<races.raceId;")
+        cursor.execute(query, (id,))
+        return cursor.fetchall()
+
+    def get_laps_in_prior_season_to_race(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT CONCAT(qualifying.driverId,races1.circuitId),COALESCE(NULLIF(qualifying.q3, ''), NULLIF(qualifying.q2, ''), NULLIF(qualifying.q1, '')) FROM races INNER JOIN races races1 ON races1.year=races.year-1 INNER JOIN qualifying ON qualifying.raceId=races1.raceId  WHERE races.raceId = %s;")
+        cursor.execute(query, (id,))
+        return cursor.fetchall()
+
     def __init__(self):
         if Database.__instance == None:
             self.db = connect()
