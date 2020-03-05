@@ -99,9 +99,67 @@ class Database:
 
     def get_next_race_year_round(self):
         cursor = self.db.cursor()
-        query = ("SELECT races.year, races.round FROM results INNER JOIN races ON results.raceId+1=races.raceId ORDER by results.raceId DESC LIMIT 1;")
+        query = ("SELECT races.year, races.round, races.raceId FROM results INNER JOIN races ON results.raceId+1=races.raceId ORDER by results.raceId DESC LIMIT 1;")
         cursor.execute(query)
         return cursor.fetchone()
+
+    def get_next_race_year_round_qualifying(self):
+        cursor = self.db.cursor()
+        query = ("SELECT races.year, races.round, races.raceId FROM qualifying INNER JOIN races ON qualifying.raceId+1=races.raceId ORDER by qualifying.raceId DESC LIMIT 1;")
+        cursor.execute(query)
+        return cursor.fetchone()
+
+    def get_driver_references(self):
+        cursor = self.db.cursor()
+        query = ("SELECT driverRef, driverId FROM drivers;")
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def get_constructor_references(self):
+        cursor = self.db.cursor()
+        query = ("SELECT constructorRef, constructorId FROM constructors;")
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def insert_driver(self, driver_ref, number, code, forename, surname, dob, nationality, url):
+        cursor = self.db.cursor()
+        query = ("INSERT INTO drivers "
+             "(driverRef, number, code, forename, surname, dob, nationality, url) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query, (driver_ref, number, code, forename, surname, dob, nationality, url))
+        return cursor.lastrowid
+
+    def insert_constructor(self, constructor_ref, name, nationality, url):
+        cursor = self.db.cursor()
+        query = ("INSERT INTO constructors "
+             "(constructorRef, name, nationality, url) "
+            "VALUES (%s, %s, %s, %s)")
+        cursor.execute(query, (constructor_ref, name, nationality, url))
+        return cursor.lastrowid
+
+    def insert_result(
+        self,
+        race_id, driver_id, constructor_id, number, grid, position, position_text, position_order, points, laps, time,
+        milliseconds, fastest_lap, rank, fastest_lap_ime, fastest_lap_speed, status_id
+    ):
+        cursor = self.db.cursor()
+        query = ("INSERT INTO results "
+             "(raceId, driverId, constructorId, number, grid, position, positionText, positionOrder, points, laps, time, "
+             "milliseconds, fastestLap, rank, fastestLapTime, fastestLapSpeed, statusId) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query,
+            (race_id, driver_id, constructor_id, number, grid, position, position_text, position_order, points, laps, time,
+            milliseconds, fastest_lap, rank, fastest_lap_time, fastest_lap_speed, status_id)
+        )
+        return cursor.rowcount
+
+    def insert_qualifying(self, race_id, driver_id, constructor_id, number, position, q1, q2, q3):
+        cursor = self.db.cursor()
+        query = ("INSERT INTO qualifying "
+             "(raceId, driverId, constructorId, number, position, q1, q2, q3) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query, (race_id, driver_id, constructor_id, number, position, q1, q2, q3))
+        return cursor.lastrowid
 
     def __init__(self):
         if Database.__instance == None:

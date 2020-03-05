@@ -7,6 +7,9 @@ from time import sleep
 # Intialise DB singleton
 Database()
 
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
+
 def run_update():
     try:
         while True:

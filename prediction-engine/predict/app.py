@@ -6,6 +6,9 @@ from ..common.db import Database
 # Intialise DB singleton
 Database()
 
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
+
 application = Flask(__name__)
 
 application.add_url_rule('/race/<int:race_id>', None, race_prediction)
