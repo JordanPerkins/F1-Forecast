@@ -97,6 +97,12 @@ class Database:
         cursor.execute(query, (id,))
         return cursor.fetchall()
 
+    def get_next_race_year_round(self):
+        cursor = self.db.cursor()
+        query = ("SELECT races.year, races.round FROM results INNER JOIN races ON results.raceId+1=races.raceId ORDER by results.raceId DESC LIMIT 1;")
+        cursor.execute(query)
+        return cursor.fetchone()
+
     def __init__(self):
         if Database.__instance == None:
             self.db = connect()
