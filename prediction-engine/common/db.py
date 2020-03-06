@@ -99,13 +99,13 @@ class Database:
 
     def get_next_race_year_round(self):
         cursor = self.db.cursor()
-        query = ("SELECT races.year, races.round, races.raceId FROM results INNER JOIN races ON results.raceId+1=races.raceId ORDER by results.raceId DESC LIMIT 1;")
+        query = ("SELECT races.year, races.round, races.raceId, races.date FROM results INNER JOIN races ON results.raceId+1=races.raceId ORDER by results.raceId DESC LIMIT 1;")
         cursor.execute(query)
         return cursor.fetchone()
 
     def get_next_race_year_round_qualifying(self):
         cursor = self.db.cursor()
-        query = ("SELECT races.year, races.round, races.raceId FROM qualifying INNER JOIN races ON qualifying.raceId+1=races.raceId ORDER by qualifying.raceId DESC LIMIT 1;")
+        query = ("SELECT races.year, races.round, races.raceId, races.date FROM qualifying INNER JOIN races ON qualifying.raceId+1=races.raceId ORDER by qualifying.raceId DESC LIMIT 1;")
         cursor.execute(query)
         return cursor.fetchone()
 
@@ -159,7 +159,41 @@ class Database:
              "(raceId, driverId, constructorId, number, position, q1, q2, q3) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
         cursor.execute(query, (race_id, driver_id, constructor_id, number, position, q1, q2, q3))
+        return cursor.rowcount
+
+    def get_next_missing_season(self):
+        cursor = self.db.cursor()
+        query = ("SELECT MAX(year)+1 FROM races;")
+        cursor.execute(query)
+        return cursor.fetchone()[0]
+
+    def get_circuit_references(self):
+        cursor = self.db.cursor()
+        query = ("SELECT circuitRef, circuitId FROM circuits;")
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def insert_circuit(self, circuit_ref, circuit_name, locality, country, lat, lng, url):
+        cursor = self.db.cursor()
+        query = ("INSERT INTO circuits "
+             "(circuitRef, name, location, country, lat, lng, url) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query, (circuit_ref, circuit_name, locality, country, lat, lng, url))
         return cursor.lastrowid
+
+    def insert_race(self, year, round_num, circuitId, name, date, time, url):
+        cursor = self.db.cursor()
+        query = ("INSERT INTO races "
+             "(year, round, circuitId, name, date, time, url) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query, (year, round_num, circuitId, name, date, time, url))
+        return cursor.rowcount
+
+    def delete_race(self, race_id):
+        cursor = self.db.cursor()
+        query = ("DELETE FROM races WHERE raceId = %s")
+        cursor.execute(query, (race_id,))
+        return cursor.rowcount
 
     def __init__(self):
         if Database.__instance == None:
