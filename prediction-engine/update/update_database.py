@@ -80,6 +80,14 @@ def insert_results(race_id, results):
             total_inserted += 1
     return total_inserted
 
+
+def lap_to_seconds(lap):
+    parts = lap.split(':')
+    if len(parts) < 2:
+        return None
+    return (float(parts[0])*60 + float(parts[1])) 
+
+
 def insert_qualifying_results(race_id, results):
     drivers = tuples_to_dictionary(db.get_driver_references())
     constructors = tuples_to_dictionary(db.get_constructor_references())
@@ -91,6 +99,7 @@ def insert_qualifying_results(race_id, results):
         constructor_id = (constructors[result['Constructor']['constructorId']][0][0]
             if result['Constructor']['constructorId'] in constructors
             else insert_constructor(result['Constructor']))
+
         inserted = db.insert_qualifying(
             race_id,
             driver_id,
@@ -99,7 +108,10 @@ def insert_qualifying_results(race_id, results):
             result['position'],
             result['Q1'],
             result['Q2'],
-            result['Q3']
+            result['Q3'],
+            laps_to_seconds(result['Q1']),
+            laps_to_seconds(result['Q2']),
+            laps_to_seconds(result['Q3'])
         )
         if inserted == 1:
             total_inserted += 1

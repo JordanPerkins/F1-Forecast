@@ -153,12 +153,12 @@ class Database:
         )
         return cursor.rowcount
 
-    def insert_qualifying(self, race_id, driver_id, constructor_id, number, position, q1, q2, q3):
+    def insert_qualifying(self, race_id, driver_id, constructor_id, number, position, q1, q2, q3, q1Seconds, q2Seconds, q3Seconds):
         cursor = self.db.cursor()
         query = ("INSERT INTO qualifying "
-             "(raceId, driverId, constructorId, number, position, q1, q2, q3) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
-        cursor.execute(query, (race_id, driver_id, constructor_id, number, position, q1, q2, q3))
+             "(raceId, driverId, constructorId, number, position, q1, q2, q3, q1Seconds, q2Seconds, q3Seconds) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        cursor.execute(query, (race_id, driver_id, constructor_id, number, position, q1, q2, q3, q1Seconds, q2Seconds, q3Seconds))
         return cursor.rowcount
 
     def get_next_missing_season(self):
