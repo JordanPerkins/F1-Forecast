@@ -62,7 +62,7 @@ class Database:
 
     def get_qualifying_results_with_driver(self, id):
         cursor = self.db.cursor()
-        query = ("SELECT drivers.*, qualifying.position, NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0), IFNULL(qualifying.q2Seconds, ~0), IFNULL(qualifying.q3Seconds, ~0))), ~0)-((SELECT MIN(LEAST(qualifying1.q1Seconds, qualifying1.q2Seconds, qualifying1.q3Seconds)) FROM qualifying qualifying1 WHERE qualifying1.raceId = qualifying.raceId)) FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE raceId=%s;")
+        query = ("SELECT drivers.*, qualifying.position, NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0), IFNULL(qualifying.q2Seconds, ~0), IFNULL(qualifying.q3Seconds, ~0))), ~0)-((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0), IFNULL(qualifying1.q2Seconds, ~0), IFNULL(qualifying1.q3Seconds, ~0))) FROM qualifying qualifying1 WHERE qualifying1.raceId = qualifying.raceId)) FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE raceId=%s;")
         cursor.execute(query, (id,))
         return cursor.fetchall()
 
