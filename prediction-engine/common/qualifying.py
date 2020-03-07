@@ -5,7 +5,7 @@ from .models import retrieve_qualifying_model
 import logging
 import traceback
 from .db import Database
-from .utils import tuples_to_dictionary, process_qualifying_results
+from .utils import tuples_to_dictionary, replace_none_with_average
 
 db = Database.get_database()
 
@@ -17,7 +17,9 @@ def driver_replacements_to_laps(drivers_to_predict_ids, drivers_in_race, previou
         replacement_dict = tuples_to_dictionary(db.get_qualifying_driver_replacements(drivers_to_predict_ids, previous_race_at_track, drivers_not_in_race, race - 1))
     new_driver_ids = [driver_id if driver_id not in drivers_not_in_race else (replacement_dict[driver_id][0][0] if driver_id in replacement_dict else None) for driver_id in drivers_to_predict_ids]
     drivers_in_race_dict = tuples_to_dictionary(drivers_in_race)
-    return [(None if driver_id is None else drivers_in_race_dict[driver_id][0][-1]) for driver_id in new_driver_ids], replacement_dict
+    deltas = replace_none_with_average([(None if driver_id is None else drivers_in_race_dict[driver_id][0][-1]) for driver_id in new_driver_ids])
+    grid = [(None if driver_id is None else int(drivers_in_race_dict[driver_id][0][-2])) for driver_id in new_driver_ids]
+    return deltas, grid, replacement_dict
 
 
 def calculate_season_changes(race, replacement_dict, drivers_to_predict_ids):
@@ -39,10 +41,7 @@ def calculate_season_changes(race, replacement_dict, drivers_to_predict_ids):
                         lap_time_in_seconds = (float(lap_time.split(':')[0])*60 + float(lap_time.split(':')[1]))
                         other_lap_time_in_seconds = (float(other_lap.split(':')[0])*60 + float(other_lap.split(':')[1]))
                         diff = lap_time_in_seconds - other_lap_time_in_seconds
-                        if driver not in replacement_dict:
-                            results.append(diff)
-                        else:
-                            results.append(0.000)
+                        results.append(diff)
         if len(results):
             result.append(round(sum(results) / len(results), 3))
         else:
@@ -72,8 +71,8 @@ def predict(race_id):
     if previous_race_at_track:
         logging.info("Race at this track exists previously, so using this to make prediction")
         drivers_in_race = db.get_qualifying_results_with_driver(previous_race_at_track)
-        laps, replacement_dict = driver_replacements_to_laps(drivers_to_predict_ids, drivers_in_race, previous_race_at_track, race)
-        deltas, ranking, fastest_lap = process_qualifying_results(laps)
+        deltas, grid, replacement_dict = driver_replacements_to_laps(drivers_to_predict_ids, drivers_in_race, previous_race_at_track, race)
+        fastest_lap = float(db.get_qualifying_fastest_lap(previous_race_at_track))
         differences = calculate_season_changes(race, replacement_dict, drivers_to_predict_ids)
         season_change = round(sum(differences) / len(differences), 3)
     else:
@@ -87,10 +86,6 @@ def predict(race_id):
         'season_change': np.array([season_change]*len(drivers_to_predict))
     }
 
-    print(deltas)
-    print(drivers_to_predict)
-    print(differences)
-
     model = retrieve_qualifying_model()
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -102,7 +97,7 @@ def predict(race_id):
     predictions = model.predict(input_fn=input_fn)
     ranking = results_to_ranking(predictions)
     fastest_lap = min([item[1] for item in ranking])
-    driver_ranking = [drivers_to_predict[position[0]] + (round(position[1]-fastest_lap, 3),) for position in ranking]
+    driver_ranking = [(drivers_to_predict[position[0]][0], drivers_to_predict[position[0]][1], round(position[1]-fastest_lap, 3)) for position in ranking]
 
     return driver_ranking
 

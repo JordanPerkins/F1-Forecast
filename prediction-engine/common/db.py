@@ -62,9 +62,15 @@ class Database:
 
     def get_qualifying_results_with_driver(self, id):
         cursor = self.db.cursor()
-        query = ("SELECT drivers.*, COALESCE(NULLIF(qualifying.q3, ''), NULLIF(qualifying.q2, ''), NULLIF(qualifying.q1, '')) FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE raceId=%s;")
+        query = ("SELECT drivers.*, qualifying.position, NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0), IFNULL(qualifying.q2Seconds, ~0), IFNULL(qualifying.q3Seconds, ~0))), ~0)-((SELECT MIN(LEAST(qualifying1.q1Seconds, qualifying1.q2Seconds, qualifying1.q3Seconds)) FROM qualifying qualifying1 WHERE qualifying1.raceId = qualifying.raceId)) FROM qualifying INNER JOIN drivers ON qualifying.driverId=drivers.driverId WHERE raceId=%s;")
         cursor.execute(query, (id,))
         return cursor.fetchall()
+
+    def get_qualifying_fastest_lap(self, id):
+        cursor = self.db.cursor()
+        query = ("SELECT MIN(LEAST(q1Seconds, q2Seconds, q3Seconds)) FROM qualifying WHERE raceId = %s;")
+        cursor.execute(query, (id,))
+        return cursor.fetchone()[0]
 
     def get_previous_year_race_by_id(self, id):
         cursor = self.db.cursor()

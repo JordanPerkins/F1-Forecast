@@ -2,6 +2,7 @@ from flask import Flask
 from .race import race_prediction
 from .qualifying import qualifying_prediction
 from ..common.db import Database
+import logging
 
 # Intialise DB singleton
 Database()
