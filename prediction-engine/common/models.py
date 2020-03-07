@@ -18,7 +18,7 @@ def retrieve_race_model():
         hidden_units=[10],
         feature_columns=feature_columns,
         n_classes=21,
-        label_vocabulary=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'DNF'],
+        label_vocabulary=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
         optimizer=tf.train.ProximalAdagradOptimizer(
             learning_rate=0.1,
             l1_regularization_strength=0.001

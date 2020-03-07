@@ -68,7 +68,7 @@ class Database:
 
     def get_qualifying_fastest_lap(self, id):
         cursor = self.db.cursor()
-        query = ("SELECT MIN(LEAST(q1Seconds, q2Seconds, q3Seconds)) FROM qualifying WHERE raceId = %s;")
+        query = ("SELECT MIN(LEAST(IFNULL(q1Seconds, ~0), IFNULL(q2Seconds, ~0), IFNULL(q3Seconds, ~0))) FROM qualifying WHERE raceId = %s;")
         cursor.execute(query, (id,))
         return cursor.fetchone()[0]
 
@@ -199,6 +199,29 @@ class Database:
         cursor = self.db.cursor()
         query = ("DELETE FROM races WHERE raceId = %s")
         cursor.execute(query, (race_id,))
+        return cursor.rowcount
+
+    def mark_races_as_in_progress(self):
+        cursor = self.db.cursor()
+        query = ("UPDATE races SET raceTrained = FALSE WHERE raceTrained IS NULL AND evaluationRace IS NOT TRUE;")
+        cursor.execute(query)
+        return cursor.rowcount
+
+    def get_race_dataset(self):
+        cursor = self.db.cursor()
+        query = ("SELECT REPLACE(LOWER(races.name), ' grand prix', ''), results.grid, "
+            "NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0), IFNULL(qualifying.q2Seconds, ~0), IFNULL(qualifying.q3Seconds, ~0))), ~0)"
+            "-((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0), IFNULL(qualifying1.q2Seconds, ~0), IFNULL(qualifying1.q3Seconds, ~0))) "
+            "FROM qualifying qualifying1 WHERE qualifying1.raceId = qualifying.raceId)), results.position FROM races "
+            "INNER JOIN results ON results.raceId=races.raceId INNER JOIN qualifying ON qualifying.raceId=results.raceId AND qualifying.driverId=results.driverId "
+            "WHERE raceTrained is FALSE AND evaluationRace is not TRUE AND results.position IS NOT NULL AND results.position <= 20;")
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def mark_races_as_complete(self):
+        cursor = self.db.cursor()
+        query = ("UPDATE races SET raceTrained = TRUE WHERE raceTrained IS FALSE AND evaluationRace IS NOT TRUE;")
+        cursor.execute(query)
         return cursor.rowcount
 
     def __init__(self):

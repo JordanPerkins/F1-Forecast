@@ -1,5 +1,6 @@
 from ..common.db import Database
 from .update_database import check_for_database_updates
+from .race_model import update_race_model
 import logging
 import traceback
 from time import sleep
@@ -15,6 +16,7 @@ def run_update():
         while True:
             check_for_database_updates()
             logging.info("Database updating completed, now retraining models")
+            update_race_model()
             logging.info("Model training completed, now pausing for 1 hour")
             sleep(60 * 60)
     except Exception as e:
