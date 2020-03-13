@@ -43,21 +43,21 @@ def predict(race_id):
     if race is None:
         race = db.get_next_race_id()
 
-    race_name = db.get_race_name(race)
-
-    logging.info("Making prediction for race with ID "+str(race)+" and name "+str(race_name))
+    logging.info("Making prediction for race with ID "+str(race))
 
     qualifying_results = db.get_qualifying_results_with_driver(race)
     if len(qualifying_results) > 0:
+        logging.info("Qualifying results exist for race with ID "+str(race))
         drivers_to_predict = [list(result)[:len(result) - 2] for result in qualifying_results]
         qualifying_grid = [int(list(result)[len(result) - 2]) for result in qualifying_results]
         qualifying_deltas = replace_none_with_average([list(result)[len(result) - 1] for result in qualifying_results])
+        race_name, race_year = db.get_race_by_id(race)
     else:
-        qualifying_results = qualifying_predict(race)
-        drivers_to_predict = [list(result)[:len(result) - 1] for result in qualifying_results]
+        logging.info("Qualifying results not available for race with ID "+str(race)+", so will make prediction")
+        qualifying_results, race_name, race_year, _ = qualifying_predict(race)
+        drivers_to_predict = [list(result)[:len(result) - 3] for result in qualifying_results]
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
         qualifying_grid = list(range(1, len(drivers_to_predict) + 1))
-        logging.info("Qualifying results not available, so will make prediction")
 
     model = retrieve_race_model()
 
@@ -75,6 +75,6 @@ def predict(race_id):
 
     predictions = model.predict(input_fn=input_fn)
     ranking = results_to_ranking(predictions, len(drivers_to_predict))
-    driver_ranking = [drivers_to_predict[position[1]] for position in ranking]
+    driver_ranking = [list(drivers_to_predict[position[1]]) for position in ranking]
 
-    return driver_ranking
+    return driver_ranking, race_name, race_year, race

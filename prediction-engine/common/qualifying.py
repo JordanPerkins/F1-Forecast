@@ -61,7 +61,7 @@ def predict(race_id):
     if race is None:
         race = db.get_next_qualifying_race_id()
 
-    race_name = db.get_race_name(race)
+    race_name, race_year = db.get_race_by_id(race)
 
     logging.info("Making prediction for race with ID "+str(race)+" and name "+str(race_name))
 
@@ -97,9 +97,9 @@ def predict(race_id):
     predictions = model.predict(input_fn=input_fn)
     ranking = results_to_ranking(predictions)
     fastest_lap = min([item[1] for item in ranking])
-    driver_ranking = [(drivers_to_predict[position[0]][0], drivers_to_predict[position[0]][1], round(position[1]-fastest_lap, 3)) for position in ranking]
+    driver_ranking = [list(drivers_to_predict[position[0]]) + [round(position[1]-fastest_lap, 3)] for position in ranking]
 
-    return driver_ranking
+    return driver_ranking, race_name, race_year, race
 
 
 

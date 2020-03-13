@@ -48,11 +48,11 @@ class Database:
         cursor.execute(query)
         return cursor.fetchone()[0]
 
-    def get_race_name(self, id):
+    def get_race_by_id(self, id):
         cursor = self.db.cursor()
-        query = ("SELECT REPLACE(LOWER(name), ' grand prix', '') FROM races WHERE raceId = %s;")
+        query = ("SELECT REPLACE(LOWER(name), ' grand prix', ''), year FROM races WHERE raceId = %s;")
         cursor.execute(query, (id,))
-        return cursor.fetchone()[0]
+        return cursor.fetchone()
 
     def get_drivers_in_race(self, id):
         cursor = self.db.cursor()

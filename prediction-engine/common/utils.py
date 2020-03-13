@@ -18,3 +18,22 @@ def tuples_to_dictionary(tuples):
         result[item[0]].append(item[1:])
     return result
 
+
+def ranking_to_dictionary(ranking):
+    result = []
+    for driver in ranking:
+        driver_quali_result = float(driver[-1]) if len(driver) > 9 else None
+        result.append({
+            'driver_id': driver[0],
+            'driver_ref': driver[1],
+            'driver_num': driver[2],
+            'driver_code': driver[3],
+            'driver_forename': driver[4],
+            'driver_surname': driver[5],
+            'driver_dob': driver[6],
+            'driver_nationality': driver[7],
+            'driver_wiki': driver[8],
+            'driver_quali_result': driver_quali_result
+        })
+    return result
+
