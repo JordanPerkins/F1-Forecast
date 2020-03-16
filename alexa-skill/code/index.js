@@ -2,7 +2,7 @@
 // Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 // session persistence, api calls, and more.
 const Alexa = require('ask-sdk-core');
-const { getRacePrediction, getQualifyingPrediction, searchForDriver } = require('./util.js');
+const { getRacePrediction, getQualifyingPrediction, searchForDriver, stringifyNumber } = require('./util.js');
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -70,12 +70,40 @@ const PredictRacePositionIntentHandler = {
                 speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
                 For example, where will 44 finish at the next race`;
             } else {
+                const position = stringifyNumber(searchedResult.position);
                 speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} is predicted to finish
-                in position ${searchedResult.position} at the ${result.data.year} ${result.data.name} grand prix`;
+                in ${position} at the ${result.data.year} ${result.data.name} grand prix`;
             }
         } catch(e) {
             console.error(`Error fetching result for PredictRacePositionIntent: ${e}`);
             speakOutput = 'I was unable to make a race prediction at this time. Please check back later'
+        }
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();
+    }
+};
+const PredictQualifyingPositionIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictQualifyingPositionIntent';
+    },
+    async handle(handlerInput) {
+        let speakOutput;
+        try {
+            const result = await getQualifyingPrediction();
+            const searchedResult = searchForDriver(result.data, handlerInput);
+            if (!searchedResult) {
+                speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
+                For example, where will 44 qualify at the next race`;
+            } else {
+                const position = stringifyNumber(searchedResult.position);
+                speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} is predicted to qualify
+                in ${position} at the ${result.data.year} ${result.data.name} grand prix`;
+            }
+        } catch(e) {
+            console.error(`Error fetching result for PredictQualifyingPositionIntent: ${e}`);
+            speakOutput = 'I was unable to make a qualifying prediction at this time. Please check back later'
         }
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -165,6 +193,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         PredictWinnerIntentHandler,
         PredictQualifyingIntentHandler,
         PredictRacePositionIntentHandler,
+        PredictQualifyingPositionIntentHandler,
         HelpIntentHandler,
         CancelAndStopIntentHandler,
         SessionEndedRequestHandler,

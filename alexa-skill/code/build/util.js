@@ -66,6 +66,8 @@ module.exports.searchForDriver = (result, handlerInput) => {
 
     const value = handlerInput.requestEnvelope.request.intent.slots.Driver.value;
 
+    console.info(`Received slot value of ${value}`);
+
     if (!result.result || result.result.length === 0) {
         return null;
     }
@@ -95,4 +97,17 @@ module.exports.searchForDriver = (result, handlerInput) => {
     }
     return drivers[0];
 }
+
+
+/** 
+ * Taken from: https://stackoverflow.com/questions/20425771/how-to-replace-1-with-first-2-with-second-3-with-third-etc
+ */
+module.exports.stringifyNumber = n => {
+    const special = ['zeroth','first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'];
+    const  deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet'];
+    if (n < 20) return special[n];
+    if (n%10 === 0) return deca[Math.floor(n/10)-2] + 'ieth';
+    return deca[Math.floor(n/10)-2] + 'y-' + special[n%10];
+}
+
 

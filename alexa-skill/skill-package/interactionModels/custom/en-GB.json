@@ -66,7 +66,32 @@
                         }
                     ],
                     "samples": [
-                        "where will {Driver} finish at the next race"
+                        "where will {Driver} finish at the next race",
+                        "which position will {Driver} finish in at the next race",
+                        "predict where {Driver} will finish at the next race",
+                        "what position will {Driver} finish in at the next race",
+                        "how will {Driver} do at the next race",
+                        "where will {Driver} finish",
+                        "predict where {Driver} will finish"
+                    ]
+                },
+                {
+                    "name": "PredictQualifyingPositionIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Driver",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where will {Driver} qualify at the next race",
+                        "which position will {Driver} qualify in at the next race",
+                        "predict where {Driver} will qualify at the next race",
+                        "what position will {Driver} qualify in at the next race",
+                        "how will {Driver} do in qualifying at the next race",
+                        "where will {Driver} qualify",
+                        "predict where {Driver} will qualify"
                     ]
                 },
                 {
