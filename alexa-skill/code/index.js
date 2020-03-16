@@ -2,7 +2,7 @@
 // Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 // session persistence, api calls, and more.
 const Alexa = require('ask-sdk-core');
-const { getRacePrediction, getQualifyingPrediction, searchForDriver, stringifyNumber } = require('./util.js');
+const { getRacePrediction, getQualifyingPrediction, searchForDriver } = require('./util.js');
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -70,9 +70,8 @@ const PredictRacePositionIntentHandler = {
                 speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
                 For example, where will 44 finish at the next race`;
             } else {
-                const position = stringifyNumber(searchedResult.position);
                 speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} is predicted to finish
-                in ${position} at the ${result.data.year} ${result.data.name} grand prix`;
+                in <say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} ${result.data.name} grand prix`;
             }
         } catch(e) {
             console.error(`Error fetching result for PredictRacePositionIntent: ${e}`);
@@ -99,7 +98,7 @@ const PredictQualifyingPositionIntentHandler = {
             } else {
                 const position = stringifyNumber(searchedResult.position);
                 speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} is predicted to qualify
-                in ${position} at the ${result.data.year} ${result.data.name} grand prix`;
+                in <say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} ${result.data.name} grand prix`;
             }
         } catch(e) {
             console.error(`Error fetching result for PredictQualifyingPositionIntent: ${e}`);
