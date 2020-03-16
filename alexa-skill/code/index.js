@@ -96,7 +96,6 @@ const PredictQualifyingPositionIntentHandler = {
                 speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
                 For example, where will 44 qualify at the next race`;
             } else {
-                const position = stringifyNumber(searchedResult.position);
                 speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} is predicted to qualify
                 in <say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} ${result.data.name} grand prix`;
             }
