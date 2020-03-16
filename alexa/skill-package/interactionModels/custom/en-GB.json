@@ -1,0 +1,81 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "formula one forecast",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "PredictWinnerIntent",
+                    "slots": [],
+                    "samples": [
+                        "who will win",
+                        "predict who will win",
+                        "predict who will win the next race",
+                        "who will win the next race",
+                        "which driver will win",
+                        "which driver will win the next race",
+                        "predict which driver will win",
+                        "predict which driver will win the next race",
+                        "who will be first in the next race",
+                        "which driver will be first in the next race",
+                        "predict who will be first in the next race",
+                        "predict which driver will be first in the next race",
+                        "predict which driver will be first"
+                    ]
+                },
+                {
+                    "name": "PredictQualifyingIntent",
+                    "slots": [],
+                    "samples": [
+                        "who will be on pole at the next race",
+                        "predict who will be on pole at the next race",
+                        "predict who be fastest in qualifying at the next race",
+                        "who will get the next pole",
+                        "who willl be fastest at the next race",
+                        "predict who will be first in qualifying at the next race",
+                        "predict who will be first in qualifying",
+                        "who will be first in qualifying",
+                        "which driver will be on pole",
+                        "which driver will be on pole at the next race",
+                        "predict which driver will be fastest in qualifying at the next race",
+                        "which driver will get the next pole",
+                        "which driver will be fastest at the next race",
+                        "predict which driver will be first in qualifying at the next race",
+                        "predict which driver will be first in qualifying",
+                        "which driver will be first in qualifying"
+                    ]
+                },
+                {
+                    "name": "PredictRacePositionIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Driver",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where will {Driver} finish at the next race"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                }
+            ],
+            "types": []
+        }
+    }
+  }
+  

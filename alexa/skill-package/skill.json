@@ -1,0 +1,40 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "summary": "Sample Short Description",
+          "examplePhrases": [
+            "Alexa open Formula One Forecast",
+            "hello",
+            "help"
+          ],
+          "name": "F1 Forecast",
+          "description": "Sample Full Description"
+        },
+        "en-GB": {
+          "summary": "Sample Short Description",
+          "examplePhrases": [
+            "Alexa open Formula One forecast",
+            "who will win the next race",
+            "help"
+          ],
+          "name": "F1 Forecast",
+          "description": "Sample Full Description"
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "Sample Testing Instructions.",
+      "category": "KNOWLEDGE_AND_TRIVIA",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:eu-west-2:261804609555:function:ask-F1Forecast-default-skillSta-AlexaSkillFunction-5C46347VS17D"
+        }
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}

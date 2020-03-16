@@ -1,0 +1,37 @@
+{
+  "askcliResourcesVersion": "2019-08-23",
+  "profiles": {
+    "default": {
+      "skillId": "amzn1.ask.skill.b2fd259e-591d-4fec-add2-cabc6c46e0e4",
+      "skillMetadata": {
+        "src": "./skill-package",
+        "lastDeployHash": "mAQB6S+JV5oKJQ4CV62o7CLzdyo="
+      },
+      "code": {
+        "default": {
+          "src": "./code",
+          "lastDeployHash": "4AhXxvDmt6YAWDZG5WZ+6j+8cUo="
+        }
+      },
+      "skillInfrastructure": {
+        "type": "@ask-cli/cfn-deployer",
+        "userConfig": {
+          "runtime": "nodejs10.x",
+          "handler": "index.handler",
+          "templatePath": "./infrastructure/cfn-deployer/skill-stack.yaml",
+          "awsRegion": "eu-west-2"
+        },
+        "deployState": {
+          "default": {
+            "s3": {
+              "bucket": "ask-alexa-skill-default-euwest2-1584199374246",
+              "key": "endpoint/upload.zip",
+              "objectVersion": "8kRTd0cgp6XqC1myDkBoJzVCJaKLgCdQ"
+            },
+            "stackId": "arn:aws:cloudformation:eu-west-2:261804609555:stack/ask-F1Forecast-default-skillStack-1584199374246/b52ab2a0-6607-11ea-8e78-0a3915ca55a4"
+          }
+        }
+      }
+    }
+  }
+}
