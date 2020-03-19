@@ -12,6 +12,14 @@
                     "samples": []
                 },
                 {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
+                },
+                {
                     "name": "AMAZON.StopIntent",
                     "samples": []
                 },
@@ -92,6 +100,17 @@
                         "how will {Driver} do in qualifying at the next race",
                         "where will {Driver} qualify",
                         "predict where {Driver} will qualify"
+                    ]
+                },
+                {
+                    "name": "ReadRaceForecastIntent",
+                    "slots": 
+                    [],
+                    "samples": [
+                        "give me the race forecast",
+                        "give me the race predictions",
+                        "predict the race",
+                        "predict the race outcome"
                     ]
                 },
                 {
