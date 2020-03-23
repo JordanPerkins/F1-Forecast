@@ -6,7 +6,7 @@ const s3SigV4Client = new AWS.S3({
     signatureVersion: 'v4'
 });
 
-LEVENSHTEIN_THRESHOLD = 2
+LEVENSHTEIN_THRESHOLD = 4
 
 module.exports.getS3PreSignedUrl = function getS3PreSignedUrl(s3ObjectKey) {
 
@@ -72,29 +72,41 @@ module.exports.searchForDriver = (result, handlerInput) => {
         return null;
     }
 
-    let drivers;
-
     const valueAsNum = Number.parseInt(value, 10);
-    if (!Number.isNaN(valueAsNum)) {
-        drivers = result.result.filter((driver, index) => {
-            driver.position = index + 1;
-            return driver.driver_num === valueAsNum;
-        });
-    } else {
-        drivers = result.result.filter((driver, index) => {
-            driver.position = index + 1;
-            valueSplit = value.split(' ');
-            if (valueSplit.length === 2) {
-                return (levenshtein(driver.driver_forename,valueSplit[0]) <= LEVENSHTEIN_THRESHOLD ||
-                levenshtein(driver.driver_surname,valueSplit[1]) <= LEVENSHTEIN_THRESHOLD);
+    const drivers = result.result.map((driver, index) => {
+            let distanceValue = null;
+            if (Number.isNaN(valueAsNum)) {
+                valueSplit = value.split(' ');
+                if (valueSplit.length === 2) {
+                    distanceValue = Math.min(
+                        levenshtein(driver.driver_forename.toLowerCase(), valueSplit[0].toLowerCase()),
+                        levenshtein(driver.driver_surname.toLowerCase(), valueSplit[1].toLowerCase())
+                    );
+                } else {
+                    distanceValue = Math.min(
+                        levenshtein(driver.driver_forename.toLowerCase(), value.toLowerCase()),
+                        levenshtein(driver.driver_surname.toLowerCase(), value.toLowerCase())
+                    );
+                }
             }
-            return (levenshtein(driver.driver_forename,value) <= LEVENSHTEIN_THRESHOLD  ||
-            levenshtein(driver.driver_surname,value) <= LEVENSHTEIN_THRESHOLD);
-        });
+            return {
+                ...driver,
+                position: index + 1,
+                distanceValue
+            }
+        })
+        .filter(driver => {
+            if (Number.isNaN(valueAsNum)) {
+                return driver.distanceValue <= LEVENSHTEIN_THRESHOLD;
+            }
+            return driver.driver_num === valueAsNum;
+        })
+        .sort((driver1, driver2) => driver1.distanceValue - driver2.distanceValue);
+
+    if (drivers.length === 1 || (drivers.length > 0 && (drivers[0].distanceValue !== null) && (drivers[0].distanceValue < drivers[1].distanceValue))) {
+        return drivers[0];
     }
-    if (drivers.length !== 1) {
-        return null;
-    }
-    return drivers[0];
+
+    return null;
 }
 

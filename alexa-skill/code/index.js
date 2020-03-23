@@ -100,6 +100,9 @@ const PredictQualifyingPositionIntentHandler = {
             } else {
                 speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} is predicted to qualify
                 in <say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} ${result.data.name} grand prix`;
+                if (searchedResult.driver_quali_result) {
+                    speakOutput += ` with a lap time ${searchedResult.driver_quali_result} seconds away from pole position`;
+                }
             }
         } catch(e) {
             console.error(`Error fetching result for PredictQualifyingPositionIntent: ${e}`);
@@ -162,7 +165,7 @@ const ReadQualifyingForecastIntentHandler = {
             speakOutput = `Here is the qualifying prediction forecast for the ${data.year} ${data.name} grand prix.`
             for (let i = 0; i < FORECAST_DRIVERS_MAX; i++) {
                 if (i < data.result.length) {
-                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname}</amazon:emotion>`
+                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname}</amazon:emotion>`;
                 }
             }
             if (FORECAST_DRIVERS_MAX < data.result.length) {
@@ -197,7 +200,7 @@ const YesIntentHandler = {
                 if (attributes.lastPosition && attributes.lastResult) {
                     for (let i = attributes.lastPosition; i < attributes.lastPosition+FORECAST_DRIVERS_MAX; i++) {
                         if (i < attributes.lastResult.result.length) {
-                            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${attributes.lastResult.result[i].driver_forename} ${attributes.lastResult.result[i].driver_surname}</amazon:emotion>`
+                            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${attributes.lastResult.result[i].driver_forename} ${attributes.lastResult.result[i].driver_surname}</amazon:emotion>`;
                         }
                     }
                     if (attributes.lastPosition+FORECAST_DRIVERS_MAX < attributes.lastResult.result.length) {
