@@ -10,6 +10,9 @@ db = Database.get_database()
 def calendar(year=None):
     try:
         season_year = year
+        race_round = None
+        date = None,
+        race_id = None
         if season_year is None:
             season_year, race_round, race_id, date = db.get_next_race_year_round()
 
