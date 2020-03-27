@@ -27,6 +27,9 @@ application.add_url_rule('/info/championship/drivers', None, drivers_championshi
 application.add_url_rule('/info/championship/constructors/<int:year>', None, constructors_championship)
 application.add_url_rule('/info/championship/constructors', None, constructors_championship)
 
+application.add_url_rule('/info/results/race', None, race_results)
+application.add_url_rule('/info/results/qualifying', None, qualifying_results)
+
 application.add_url_rule('/', None, lambda: 'Ok')
 
 if __name__ == '__main__':

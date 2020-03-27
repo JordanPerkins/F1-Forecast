@@ -209,3 +209,15 @@ class Database:
     def get_constructors_standings(self, race):
         cursor = self.query("SELECT constructors.constructorId, constructors.constructorRef, constructors.name, constructors.nationality, constructors.url, constructorStandings.points, constructorStandings.wins, constructorStandings.position FROM constructorStandings INNER JOIN constructors ON constructors.constructorId=constructorStandings.constructorId WHERE raceId = %s ORDER BY position ASC;", (race,))
         return cursor.fetchall()
+
+    def get_race_results(self, race):
+        cursor = self.query("SELECT resultId, driverRef, drivers.number, drivers.code, forename, surname, dob, nationality, url, grid, position, points, laps FROM results INNER JOIN status ON status.statusId=results.statusId INNER JOIN drivers ON drivers.driverId=results.driverId WHERE raceId = %s ORDER BY -position DESC;", (race,))
+        return cursor.fetchall()
+
+    def get_last_qualifying_race_id(self):
+        cursor = self.query("SELECT MAX(raceId) FROM qualifying;")
+        return cursor.fetchone()[0]
+
+    def get_qualifying_results(self, race):
+        cursor = self.query("SELECT qualifyId, driverRef, drivers.number, drivers.code, forename, surname, dob, nationality, url, position, q1, q2, q3 FROM qualifying INNER JOIN drivers ON drivers.driverId=qualifying.driverId WHERE raceId = %s ORDER BY -position DESC;", (race,))
+        return cursor.fetchall()
