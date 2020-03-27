@@ -1,6 +1,6 @@
 from flask import Flask
-from .race import race_prediction
-from .qualifying import qualifying_prediction
+from .predict import qualifying_prediction, race_prediction
+from .info import *
 from ..common.db import Database
 import logging
 
@@ -12,11 +12,14 @@ logging.root.setLevel(logging.NOTSET)
 
 application = Flask(__name__)
 
-application.add_url_rule('/race/<int:race_id>', None, race_prediction)
-application.add_url_rule('/race', None, race_prediction)
+application.add_url_rule('/predict/race/<int:race_id>', None, race_prediction)
+application.add_url_rule('/predict/race', None, race_prediction)
 
-application.add_url_rule('/qualifying/<int:race_id>', None, qualifying_prediction)
-application.add_url_rule('/qualifying', None, qualifying_prediction)
+application.add_url_rule('/predict/qualifying/<int:race_id>', None, qualifying_prediction)
+application.add_url_rule('/predict/qualifying', None, qualifying_prediction)
+
+application.add_url_rule('/info/calendar/<int:year>', None, calendar)
+application.add_url_rule('/info/calendar', None, calendar)
 
 application.add_url_rule('/', None, lambda: 'Ok')
 

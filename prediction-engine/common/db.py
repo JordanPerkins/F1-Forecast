@@ -189,3 +189,7 @@ class Database:
     def mark_races_as_complete(self):
         cursor = self.query("UPDATE races SET raceTrained = TRUE WHERE raceTrained IS FALSE AND evaluationRace IS NOT TRUE;")
         return cursor.rowcount
+
+    def get_calendar(self, year):
+        cursor = self.query("SELECT races.name, races.date, races.time, races.round, circuits.name, circuits.circuitRef, circuits.location, circuits.country FROM races INNER JOIN circuits ON circuits.circuitId = races.circuitId WHERE year = %s;", (year,))
+        return cursor.fetchall()

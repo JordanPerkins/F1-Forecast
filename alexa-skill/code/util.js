@@ -25,7 +25,7 @@ module.exports.getRacePrediction = async () => {
         throw Error('Prediction endpoint missing - disabled predictions');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/race');
+    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/predict/race');
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from race prediction request: ${result.status}`);
@@ -43,7 +43,7 @@ module.exports.getQualifyingPrediction = async () => {
         throw Error('Prediction endpoint missing - disabled predictions');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/qualifying');
+    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/predict/qualifying');
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from qualifying prediction request: ${result.status}`);
