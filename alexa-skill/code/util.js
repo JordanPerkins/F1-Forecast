@@ -82,7 +82,7 @@ module.exports.searchForDriver = (result, handlerInput) => {
                         levenshtein(driver.driver_forename.toLowerCase(), valueSplit[0].toLowerCase()),
                         levenshtein(driver.driver_surname.toLowerCase(), valueSplit[1].toLowerCase())
                     );
-                } else {
+                } else if (valueSplit.length === 1) {
                     distanceValue = Math.min(
                         levenshtein(driver.driver_forename.toLowerCase(), value.toLowerCase()),
                         levenshtein(driver.driver_surname.toLowerCase(), value.toLowerCase())
@@ -97,7 +97,7 @@ module.exports.searchForDriver = (result, handlerInput) => {
         })
         .filter(driver => {
             if (Number.isNaN(valueAsNum)) {
-                return driver.distanceValue <= LEVENSHTEIN_THRESHOLD;
+                return driver.distanceValue && (driver.distanceValue <= LEVENSHTEIN_THRESHOLD);
             }
             return driver.driver_num === valueAsNum;
         })
