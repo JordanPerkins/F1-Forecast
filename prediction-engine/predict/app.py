@@ -21,6 +21,12 @@ application.add_url_rule('/predict/qualifying', None, qualifying_prediction)
 application.add_url_rule('/info/calendar/<int:year>', None, calendar)
 application.add_url_rule('/info/calendar', None, calendar)
 
+application.add_url_rule('/info/championship/drivers/<int:year>', None, drivers_championship)
+application.add_url_rule('/info/championship/drivers', None, drivers_championship)
+
+application.add_url_rule('/info/championship/constructors/<int:year>', None, constructors_championship)
+application.add_url_rule('/info/championship/constructors', None, constructors_championship)
+
 application.add_url_rule('/', None, lambda: 'Ok')
 
 if __name__ == '__main__':

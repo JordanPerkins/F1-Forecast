@@ -191,5 +191,21 @@ class Database:
         return cursor.rowcount
 
     def get_calendar(self, year):
-        cursor = self.query("SELECT races.name, races.date, races.time, races.round, circuits.name, circuits.circuitRef, circuits.location, circuits.country FROM races INNER JOIN circuits ON circuits.circuitId = races.circuitId WHERE year = %s;", (year,))
+        cursor = self.query("SELECT races.name, races.date, races.time, races.round, circuits.name, circuits.circuitRef, circuits.location, circuits.country FROM races INNER JOIN circuits ON circuits.circuitId = races.circuitId WHERE year = %s ORDER BY races.round ASC;", (year,))
+        return cursor.fetchall()
+
+    def get_last_race_id(self):
+        cursor = self.query("SELECT MAX(raceId) FROM results;")
+        return cursor.fetchone()[0]
+
+    def get_last_race_id_in_year(self, year):
+        cursor = self.query("SELECT MAX(results.raceId) FROM results INNER JOIN races ON races.raceId=results.raceId WHERE races.year = %s;", (year,))
+        return cursor.fetchone()[0]
+
+    def get_drivers_standings(self, race):
+        cursor = self.query("SELECT drivers.*, driverStandings.points, driverStandings.wins, driverStandings.position FROM driverStandings INNER JOIN drivers ON drivers.driverId=driverStandings.driverId WHERE raceId = %s ORDER BY position ASC;", (race,))
+        return cursor.fetchall()
+
+    def get_constructors_standings(self, race):
+        cursor = self.query("SELECT constructors.constructorId, constructors.constructorRef, constructors.name, constructors.nationality, constructors.url, constructorStandings.points, constructorStandings.wins, constructorStandings.position FROM constructorStandings INNER JOIN constructors ON constructors.constructorId=constructorStandings.constructorId WHERE raceId = %s ORDER BY position ASC;", (race,))
         return cursor.fetchall()
