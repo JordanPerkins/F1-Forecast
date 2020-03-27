@@ -32,7 +32,7 @@ class Database:
         try:
             cursor = self.db.cursor()
             cursor.execute(*args)
-        except mysql.connector.errors.OperationalError as err:
+        except mysql.errors.OperationalError as err:
             logging.debug("Reconnecting to MySQL as connection lost");
             self.connect()
             cursor = self.db.cursor()
