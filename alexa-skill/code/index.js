@@ -7,6 +7,7 @@ const Alexa = require('ask-sdk-core');
 const predictionIntents = require('./predictionIntents.js');
 const continuationIntents = require('./continuationIntents.js');
 const genericIntents = require('./genericIntents.js');
+const infoIntents = require('./infoIntents.js');
 
 // Generic error handling to capture any syntax or routing errors. If you receive an error
 // stating the request handler chain is not found, you have not implemented a handler for
@@ -53,6 +54,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         ...Object.values(predictionIntents),
         ...Object.values(continuationIntents),
         ...Object.values(genericIntents),
+        ...Object.values(infoIntents),
         IntentReflectorHandler
     ) 
     .addErrorHandlers(ErrorHandler)

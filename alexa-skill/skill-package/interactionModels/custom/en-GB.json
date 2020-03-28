@@ -132,6 +132,34 @@
                         "predict qualifying",
                         "predict the qualifying outcome"
                     ]
+                },
+                {
+                    "name": "GetNextRaceIntent",
+                    "slots": 
+                    [],
+                    "samples": [
+                        "give me the next race",
+                        "when is the next race",
+                        "when is the next grand prix",
+                        "what is the next race",
+                        "when is the next f. one race",
+                        "when is the next formula one race",
+                        "what is the upcoming race",
+                        "what is the upcoming grand prix"
+                    ]
+                },
+                {
+                    "name": "GetFullCalendarIntent",
+                    "slots": 
+                    [],
+                    "samples": [
+                        "give me the race calendar",
+                        "give me the full calendar",
+                        "give me the full race calendar",
+                        "give me the full list of races",
+                        "what is the season calendar",
+                        "what are the races this season"
+                    ]
                 }
             ],
             "types": []

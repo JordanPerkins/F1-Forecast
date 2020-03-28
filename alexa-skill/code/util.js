@@ -79,7 +79,7 @@ module.exports.searchForDriver = (result, handlerInput) => {
     const drivers = result.result.map((driver, index) => {
             let distanceValue = null;
             if (Number.isNaN(valueAsNum)) {
-                valueSplit = value.split(' ');
+                const valueSplit = value.split(' ');
                 if (valueSplit.length === 2) {
                     distanceValue = Math.min(
                         levenshtein(driver.driver_forename.toLowerCase(), valueSplit[0].toLowerCase()),
@@ -100,7 +100,7 @@ module.exports.searchForDriver = (result, handlerInput) => {
         })
         .filter(driver => {
             if (Number.isNaN(valueAsNum)) {
-                return driver.distanceValue && (driver.distanceValue <= config.levenshteinThreshold);
+                return (driver.distanceValue !== null) && (driver.distanceValue <= config.levenshteinThreshold);
             }
             return driver.driver_num === valueAsNum;
         })
@@ -112,4 +112,40 @@ module.exports.searchForDriver = (result, handlerInput) => {
 
     return null;
 }
+
+module.exports.getNextRace = result => {
+    if (!result.calendar|| result.calendar.length === 0) {
+        throw Error('Calendar was empty');
+    }
+
+    const filteredRaces = result.calendar.filter(race => race.is_next_race);
+
+    if (!filteredRaces.length) {
+        throw Error('Filtered calendar results were empty');
+    }
+
+    return filteredRaces[0];
+};
+
+module.exports.getRemainingRaces = result => {
+    if (!result.calendar|| result.calendar.length === 0) {
+        throw Error('Calendar was empty');
+    }
+
+    const filteredRaces = result.calendar.filter(race => race.race_round >= result.next_race_round);
+
+    if (!filteredRaces.length) {
+        throw Error('Filtered calendar results were empty');
+    }
+
+    return filteredRaces;
+};
+
+module.exports.formatRaceDate = date => {
+    const raceDate = new Date(date);
+    const monthString = (raceDate.getMonth() + 1).toString().padStart(2, '0');
+    const dateString = raceDate.getDate().toString().padStart(2, '0');
+    const formattedDate = `${raceDate.getFullYear()}${monthString}${dateString}`;
+    return formattedDate;
+};
 

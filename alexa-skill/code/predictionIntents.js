@@ -117,13 +117,13 @@ const ReadRaceForecastIntentHandler = {
             const result = await getRacePrediction();
             const data = result.data;
             speakOutput = `Here is the race prediction forecast for the ${data.year} ${data.name} grand prix.`
-            for (let i = 0; i < config.forecastDriversMax; i++) {
+            for (let i = 0; i < config.listMax; i++) {
                 if (i < data.result.length) {
                     speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname} </amazon:emotion>`
                 }
             }
-            if (config.forecastDriversMax < data.result.length) {
-                attributes.lastPosition = config.forecastDriversMax;
+            if (config.listMax < data.result.length) {
+                attributes.lastPosition = config.listMax;
                 attributes.lastResult = data;
                 return handlerInput.responseBuilder
                 .speak(speakOutput)
@@ -155,13 +155,13 @@ const ReadQualifyingForecastIntentHandler = {
             const result = await getQualifyingPrediction();
             const data = result.data;
             speakOutput = `Here is the qualifying prediction forecast for the ${data.year} ${data.name} grand prix.`
-            for (let i = 0; i < config.forecastDriversMax; i++) {
+            for (let i = 0; i < config.listMax; i++) {
                 if (i < data.result.length) {
                     speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname} </amazon:emotion>`;
                 }
             }
-            if (config.forecastDriversMax < data.result.length) {
-                attributes.lastPosition = config.forecastDriversMax;
+            if (config.listMax < data.result.length) {
+                attributes.lastPosition = config.listMax;
                 attributes.lastResult = data;
                 return handlerInput.responseBuilder
                 .speak(speakOutput)
@@ -188,4 +188,3 @@ module.exports = {
     ReadRaceForecastIntentHandler,
     ReadQualifyingForecastIntentHandler
 };
-xw
