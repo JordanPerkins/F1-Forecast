@@ -1,24 +1,9 @@
-const AWS = require('aws-sdk');
+'use strict';
+
 const axios = require('axios');
 const levenshtein = require('js-levenshtein');
 
-const s3SigV4Client = new AWS.S3({
-    signatureVersion: 'v4'
-});
-
-LEVENSHTEIN_THRESHOLD = 4
-
-module.exports.getS3PreSignedUrl = function getS3PreSignedUrl(s3ObjectKey) {
-
-    const bucketName = process.env.S3_PERSISTENCE_BUCKET;
-    const s3PreSignedUrl = s3SigV4Client.getSignedUrl('getObject', {
-        Bucket: bucketName,
-        Key: s3ObjectKey,
-        Expires: 60*1 // the Expires is capped for 1 minute
-    });
-    console.log(`Util.s3PreSignedUrl: ${s3ObjectKey} URL ${s3PreSignedUrl}`);
-    return s3PreSignedUrl;
-}
+const config = require('./config.js')();
 
 module.exports.getRacePrediction = async () => {
     if (!process.env.PREDICTION_ENDPOINT) {
@@ -47,6 +32,24 @@ module.exports.getQualifyingPrediction = async () => {
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from qualifying prediction request: ${result.status}`);
+    }
+
+    if (!result.data || typeof result.data !== 'object') {
+        throw Error('Did not receive data object');
+    }
+
+    return result;
+}
+
+module.exports.getCalendar = async () => {
+    if (!process.env.PREDICTION_ENDPOINT) {
+        throw Error('Prediction endpoint missing - disabled information');
+    }
+
+    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/info/calendar');
+
+    if (result.status !== 200) {
+        throw Error(`Did not receive status 200 from calendar request: ${result.status}`);
     }
 
     if (!result.data || typeof result.data !== 'object') {
@@ -97,7 +100,7 @@ module.exports.searchForDriver = (result, handlerInput) => {
         })
         .filter(driver => {
             if (Number.isNaN(valueAsNum)) {
-                return driver.distanceValue && (driver.distanceValue <= LEVENSHTEIN_THRESHOLD);
+                return driver.distanceValue && (driver.distanceValue <= config.levenshteinThreshold);
             }
             return driver.driver_num === valueAsNum;
         })
