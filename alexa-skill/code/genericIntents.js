@@ -18,7 +18,8 @@ const LaunchRequestHandler = {
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
+            && (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent'
+                || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent');
     },
     handle(handlerInput) {
         const speakOutput = 'You can say hello to me! How can I help?';

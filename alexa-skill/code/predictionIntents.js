@@ -119,7 +119,7 @@ const ReadRaceForecastIntentHandler = {
             speakOutput = `Here is the race prediction forecast for the ${data.year} ${data.name} grand prix.`
             for (let i = 0; i < config.forecastDriversMax; i++) {
                 if (i < data.result.length) {
-                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname}</amazon:emotion>`
+                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname} </amazon:emotion>`
                 }
             }
             if (config.forecastDriversMax < data.result.length) {
@@ -184,6 +184,8 @@ module.exports = {
     PredictWinnerIntentHandler,
     PredictQualifyingIntentHandler,
     PredictRacePositionIntentHandler,
+    PredictQualifyingPositionIntentHandler,
     ReadRaceForecastIntentHandler,
     ReadQualifyingForecastIntentHandler
 };
+xw

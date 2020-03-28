@@ -28,6 +28,10 @@
                     "samples": []
                 },
                 {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
                     "name": "PredictWinnerIntent",
                     "slots": [],
                     "samples": [
