@@ -4,7 +4,7 @@ const Alexa = require('ask-sdk-core');
 
 const config = require('./config.js')();
 
-module.exports.NoIntentHandler = {
+const NoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent');
@@ -21,7 +21,7 @@ module.exports.NoIntentHandler = {
     }
 };
 
-module.exports.YesIntentHandler = {
+const YesIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.YesIntent';
@@ -34,7 +34,7 @@ module.exports.YesIntentHandler = {
                 if (attributes.lastPosition && attributes.lastResult) {
                     for (let i = attributes.lastPosition; i < attributes.lastPosition+config.forecastDriversMax; i++) {
                         if (i < attributes.lastResult.result.length) {
-                            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${attributes.lastResult.result[i].driver_forename} ${attributes.lastResult.result[i].driver_surname}</amazon:emotion>`;
+                            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${attributes.lastResult.result[i].driver_forename} ${attributes.lastResult.result[i].driver_surname} </amazon:emotion>`;
                         }
                     }
                     if (attributes.lastPosition+config.forecastDriversMax < attributes.lastResult.result.length) {
@@ -60,4 +60,9 @@ module.exports.YesIntentHandler = {
             .getResponse();
         }
     }
+};
+
+module.exports = {
+    NoIntentHandler,
+    YesIntentHandler
 };

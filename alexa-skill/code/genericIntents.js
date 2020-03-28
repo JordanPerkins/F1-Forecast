@@ -2,7 +2,7 @@
 
 const Alexa = require('ask-sdk-core');
 
-module.exports.LaunchRequestHandler = {
+const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
@@ -14,7 +14,8 @@ module.exports.LaunchRequestHandler = {
             .getResponse();
     }
 };
-module.exports.HelpIntentHandler = {
+
+const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
@@ -28,7 +29,8 @@ module.exports.HelpIntentHandler = {
             .getResponse();
     }
 };
-module.exports.CancelAndStopIntentHandler = {
+
+const CancelAndStopIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.CancelIntent'
@@ -41,7 +43,8 @@ module.exports.CancelAndStopIntentHandler = {
             .getResponse();
     }
 };
-module.exports.SessionEndedRequestHandler = {
+
+const SessionEndedRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest';
     },
@@ -52,4 +55,11 @@ module.exports.SessionEndedRequestHandler = {
         attributes.lastIntent = undefined;
         return handlerInput.responseBuilder.getResponse();
     }
+};
+
+module.exports = {
+    LaunchRequestHandler,
+    HelpIntentHandler,
+    CancelAndStopIntentHandler,
+    SessionEndedRequestHandler
 };

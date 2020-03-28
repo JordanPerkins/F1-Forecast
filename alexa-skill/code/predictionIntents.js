@@ -5,7 +5,7 @@ const { getRacePrediction, getQualifyingPrediction, searchForDriver } = require(
 
 const config = require('./config.js')();
 
-module.exports.PredictWinnerIntentHandler = {
+const PredictWinnerIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictWinnerIntent';
@@ -25,7 +25,8 @@ module.exports.PredictWinnerIntentHandler = {
             .getResponse();
     }
 };
-module.exports.PredictQualifyingIntentHandler = {
+
+const PredictQualifyingIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictQualifyingIntent';
@@ -45,7 +46,8 @@ module.exports.PredictQualifyingIntentHandler = {
             .getResponse();
     }
 };
-module.exports.PredictRacePositionIntentHandler = {
+
+const PredictRacePositionIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictRacePositionIntent';
@@ -71,7 +73,8 @@ module.exports.PredictRacePositionIntentHandler = {
             .getResponse();
     }
 };
-module.exports.PredictQualifyingPositionIntentHandler = {
+
+const PredictQualifyingPositionIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictQualifyingPositionIntent';
@@ -100,7 +103,8 @@ module.exports.PredictQualifyingPositionIntentHandler = {
             .getResponse();
     }
 };
-module.exports.ReadRaceForecastIntentHandler = {
+
+const ReadRaceForecastIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ReadRaceForecastIntent';
@@ -137,7 +141,8 @@ module.exports.ReadRaceForecastIntentHandler = {
         }
     }
 };
-module.exports.ReadQualifyingForecastIntentHandler = {
+
+const ReadQualifyingForecastIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ReadQualifyingForecastIntent';
@@ -152,7 +157,7 @@ module.exports.ReadQualifyingForecastIntentHandler = {
             speakOutput = `Here is the qualifying prediction forecast for the ${data.year} ${data.name} grand prix.`
             for (let i = 0; i < config.forecastDriversMax; i++) {
                 if (i < data.result.length) {
-                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname}</amazon:emotion>`;
+                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ${data.result[i].driver_surname} </amazon:emotion>`;
                 }
             }
             if (config.forecastDriversMax < data.result.length) {
@@ -173,4 +178,12 @@ module.exports.ReadQualifyingForecastIntentHandler = {
             .getResponse();
         }
     }
+};
+
+module.exports = {
+    PredictWinnerIntentHandler,
+    PredictQualifyingIntentHandler,
+    PredictRacePositionIntentHandler,
+    ReadRaceForecastIntentHandler,
+    ReadQualifyingForecastIntentHandler
 };

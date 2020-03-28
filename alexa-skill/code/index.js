@@ -50,9 +50,9 @@ const IntentReflectorHandler = {
 // defined are included below. The order matters - they're processed top to bottom.
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
-        ...predictionIntents,
-        ...continuationIntents,
-        ...genericIntents,
+        ...Object.values(predictionIntents),
+        ...Object.values(continuationIntents),
+        ...Object.values(genericIntents),
         IntentReflectorHandler
     ) 
     .addErrorHandlers(ErrorHandler)
