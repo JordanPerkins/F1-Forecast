@@ -4,3 +4,4 @@ boto3
 tensorflow==1.15
 mysql-connector-python==8.0.5
 requests
+gevent

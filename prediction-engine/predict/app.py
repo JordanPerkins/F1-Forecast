@@ -31,6 +31,3 @@ application.add_url_rule('/info/results/race', None, race_results)
 application.add_url_rule('/info/results/qualifying', None, qualifying_results)
 
 application.add_url_rule('/', None, lambda: 'Ok')
-
-if __name__ == '__main__':
-    application.run(host="0.0.0.0")

@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 WORKDIR ../
 
-CMD ["python", "-m", "prediction-engine.predict.app"]
+CMD ["python", "-m", "prediction-engine.predict.pywsgi"]

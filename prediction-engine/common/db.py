@@ -21,8 +21,7 @@ class Database:
 
     def connect(self):
         try:
-            connection = mysql.connection.MySQLConnection(user=SQL_USER, password=SQL_PASSWORD, host=SQL_HOST, database=SQL_DATABASE)
-            self.db = connection
+            self.db = mysql.connection.MySQLConnection(user=SQL_USER, password=SQL_PASSWORD, host=SQL_HOST, database=SQL_DATABASE)
             logging.debug("Successfully opened MySQL connection");
         except mysql.Error as err:
             logging.error('Could not connect to database: '+str(err))
