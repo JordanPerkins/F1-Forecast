@@ -5,12 +5,12 @@
       "skillId": "amzn1.ask.skill.b2fd259e-591d-4fec-add2-cabc6c46e0e4",
       "skillMetadata": {
         "src": "./skill-package",
-        "lastDeployHash": "zcDY5WjJwkogoNcmzeJphQ12NqA="
+        "lastDeployHash": "7KNyeA8lOLyAU8gHOnCqGyp9IKM="
       },
       "code": {
         "default": {
           "src": "./code",
-          "lastDeployHash": "wO5cTDE5jJexcTQkqW/3ahpGu/Q="
+          "lastDeployHash": "1WAforGQWZMi2OJ+yKWQpbUJ5QU="
         }
       },
       "skillInfrastructure": {
@@ -26,7 +26,7 @@
             "s3": {
               "bucket": "ask-alexa-skill-default-euwest2-1584199374246",
               "key": "endpoint/upload.zip",
-              "objectVersion": "RXxZPskE6FFM9fbD1OXwYFGqO0.6xcbs"
+              "objectVersion": "JI5QeqOc382iwGgskVgKYHdwt7aFxktZ"
             },
             "stackId": "arn:aws:cloudformation:eu-west-2:261804609555:stack/ask-F1Forecast-default-skillStack-1584199374246/b52ab2a0-6607-11ea-8e78-0a3915ca55a4"
           }

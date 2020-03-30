@@ -21,7 +21,7 @@ module.exports.getRacePrediction = async () => {
     }
 
     return result;
-}
+};
 
 module.exports.getQualifyingPrediction = async () => {
     if (!process.env.PREDICTION_ENDPOINT) {
@@ -39,7 +39,7 @@ module.exports.getQualifyingPrediction = async () => {
     }
 
     return result;
-}
+};
 
 module.exports.getCalendar = async () => {
     if (!process.env.PREDICTION_ENDPOINT) {
@@ -57,7 +57,7 @@ module.exports.getCalendar = async () => {
     }
 
     return result;
-}
+};
 
 module.exports.searchForDriver = (result, handlerInput) => {
     if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request ||
@@ -111,7 +111,50 @@ module.exports.searchForDriver = (result, handlerInput) => {
     }
 
     return null;
-}
+};
+
+module.exports.searchForRace = (result, handlerInput) => {
+    if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request ||
+        !handlerInput.requestEnvelope.request.intent || !handlerInput.requestEnvelope.request.intent.slots ||
+        !handlerInput.requestEnvelope.request.intent.slots.Race ||
+        !handlerInput.requestEnvelope.request.intent.slots.Race.value) {
+            return null;
+    }
+
+    const value = handlerInput.requestEnvelope.request.intent.slots.Race.value;
+
+    console.info(`Received slot value of ${value}`);
+
+    if (!result.calendar || result.calendar.length === 0) {
+        return null;
+    }
+
+    const races = result.calendar.map(race => {
+            const grandPrixName = race.race_name.split(' ').slice(0, -2).join(' ').toLowerCase();
+            const circuitName = race.circuit_ref.replace('_', ' ').toLowerCase();
+            const distanceValue = Math.min(
+                levenshtein(grandPrixName, value.toLowerCase()),
+                levenshtein(race.circuit_location.toLowerCase(), value.toLowerCase()),
+                levenshtein(race.circuit_country.toLowerCase(), value.toLowerCase()),
+                levenshtein(race.circuit_country.toLowerCase(), value.toLowerCase()),
+                levenshtein(circuitName, value.toLowerCase()),
+                    );
+            return {
+                ...race,
+                distanceValue
+            }
+        })
+        .filter(race => {
+            return (race.distanceValue !== null) && (race.distanceValue <= config.levenshteinRaceThreshold);
+        })
+        .sort((race1, race2) => race1.distanceValue - race2.distanceValue);
+
+    if (races.length === 1 || (races.length > 0 && (races[0].distanceValue !== null) && (races[0].distanceValue < races[1].distanceValue))) {
+        return races[0];
+    }
+
+    return null;
+};
 
 module.exports.getNextRace = result => {
     if (!result.calendar|| result.calendar.length === 0) {
@@ -149,3 +192,38 @@ module.exports.formatRaceDate = date => {
     return formattedDate;
 };
 
+module.exports.getDriversChampionship = async (year = null) => {
+    if (!process.env.PREDICTION_ENDPOINT) {
+        throw Error('Prediction endpoint missing - disabled information');
+    }
+
+    const result = await axios.get(process.env.PREDICTION_ENDPOINT+`/info/championship/drivers${year ? `/${year}` : ''}`);
+
+    if (result.status !== 200) {
+        throw Error(`Did not receive status 200 from drivers championship request for year ${year}: ${result.status}`);
+    }
+
+    if (!result.data || typeof result.data !== 'object') {
+        throw Error('Did not receive data object');
+    }
+
+    return result;
+};
+
+module.exports.getConstructorsChampionship = async (year = null) => {
+    if (!process.env.PREDICTION_ENDPOINT) {
+        throw Error('Prediction endpoint missing - disabled information');
+    }
+
+    const result = await axios.get(process.env.PREDICTION_ENDPOINT+`/info/championship/constructors${year ? `/${year}` : ''}`);
+
+    if (result.status !== 200) {
+        throw Error(`Did not receive status 200 from constructors championship request for year ${year}: ${result.status}`);
+    }
+
+    if (!result.data || typeof result.data !== 'object') {
+        throw Error('Did not receive data object');
+    }
+
+    return result;
+};

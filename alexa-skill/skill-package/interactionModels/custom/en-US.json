@@ -148,6 +148,51 @@
                         "what is the season calendar",
                         "what are the races this season"
                     ]
+                },
+                {
+                    "name": "CalendarRaceIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Race",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "when is the {Race} grand prix",
+                        "when is the {Race} g.p.",
+                        "when is the {Race} race",
+                        "what date is the {Race} grand prix",
+                        "what date is the {Race} gp",
+                        "what date is the {Race} race",
+                        "what is the date of the {Race} grand prix",
+                        "what is the date of the {Race} g.p.",
+                        "what is the date of the {Race} race",
+                        "when is the grand prix in {Race}",
+                        "when is the race in {Race}",
+                        "when is the g.p. in {Race}",
+                        "what date is the grand prix in {Race}",
+                        "what date is the race in {Race}",
+                        "what date is the g.p. in {Race}"
+                    ]
+                },
+                {
+                    "name": "ChampionshipLeaderIntent",
+                    "slots": 
+                    [],
+                    "samples": [
+                        "who is the leader of the championship",
+                        "who is first in the championship",
+                        "who leads the championship",
+                        "who is the leader of the drivers championship",
+                        "who is first in the drivers championship",
+                        "who leads the drivers championship",
+                        "who is the leader of the constructors championship",
+                        "who is in first in the constructors championship",
+                        "who leads the constructors championship",
+                        "which driver leads the championship",
+                        "which constructor leads the championship"
+                    ]
                 }
             ],
             "types": []

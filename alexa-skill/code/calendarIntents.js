@@ -1,7 +1,7 @@
 'use strict';
 
 const Alexa = require('ask-sdk-core');
-const { getCalendar, getNextRace, formatRaceDate, getRemainingRaces } = require('./util.js');
+const { getCalendar, getNextRace, formatRaceDate, getRemainingRaces, searchForRace } = require('./util.js');
 
 const config = require('./config.js')();
 
@@ -18,7 +18,7 @@ const GetNextRaceIntentHandler = {
             const formattedDate = formatRaceDate(nextRace.race_date);
             speakOutput = `The next Grand Prix, which is the <say-as interpret-as="ordinal">${nextRace.race_round}</say-as> round of the championship, is the ${nextRace.race_name} at the ${nextRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>, starting at ${nextRace.race_time} GMT.`;
         } catch(e) {
-            console.error(`Error fetching result for GetNextRaceIntentIntent: ${e}`);
+            console.error(`Error fetching result for GetNextRaceIntentHandler: ${e}`);
             speakOutput = 'I was unable to get the race calendar at this time. Please check back later'
         }
         return handlerInput.responseBuilder
@@ -66,8 +66,40 @@ const GetFullCalendarIntentHandler = {
     }
 };
 
+const CalendarRaceIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CalendarRaceIntent';
+    },
+    async handle(handlerInput) {
+        let speakOutput;
+        try {
+            const result = await getCalendar();
+            const searchedRace = searchForRace(result.data, handlerInput);
+            if (!searchedRace) {
+                speakOutput = `I coud not find the race you requested. You can use the race name, circuit name, circuit location or circuit country.`;
+            } else {
+                const formattedDate = formatRaceDate(searchedRace.race_date);
+                if (searchedRace.race_round < result.data.next_race_round) {
+                    speakOutput = `The ${searchedRace.race_name}, which was the <say-as interpret-as="ordinal">${searchedRace.race_round}</say-as> round of the championship, took place at ${searchedRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>`;
+                } else {
+                    speakOutput = `The ${searchedRace.race_name}, which is the <say-as interpret-as="ordinal">${searchedRace.race_round}</say-as> round of the championship, will take place at ${searchedRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>, starting at ${searchedRace.race_time} GMT.`;
+                }
+            }
+        } catch(e) {
+            console.error(`Error fetching result for CalendarRaceIntent: ${e}`);
+            speakOutput = 'I was unable to get the race calendar at this time. Please check back later'
+        }
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();
+    }
+};
+
+
 
 module.exports = {
     GetNextRaceIntentHandler,
-    GetFullCalendarIntentHandler
+    GetFullCalendarIntentHandler,
+    CalendarRaceIntentHandler
 };
