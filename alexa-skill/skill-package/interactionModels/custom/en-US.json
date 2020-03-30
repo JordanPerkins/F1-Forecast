@@ -193,6 +193,45 @@
                         "which driver leads the championship",
                         "which constructor leads the championship"
                     ]
+                },
+                {
+                    "name": "ChampionshipDriverIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Driver",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where is {Driver} in the standings",
+                        "where is {Driver} in the championship standings",
+                        "where is {Driver} in the championship",
+                        "what position is {Driver} in the championship",
+                        "what position is {Driver} in the championship",
+                        "where is {Driver} in the drivers standings",
+                        "where is {Driver} in the drivers championship standings",
+                        "where is {Driver} in the drivers championship",
+                        "what position is {Driver} in the drivers championship",
+                        "what position is {Driver} in the drivers championship"
+                    ]
+                },
+                {
+                    "name": "ChampionshipConstructorIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Team",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where is {Team} in the constructors standings",
+                        "where is {Team} in the championship standings",
+                        "where is {Team} in the constructors championship",
+                        "what position is {Team} in the constructors championship",
+                        "what position is {Team} in the constructors championship"
+                    ]
                 }
             ],
             "types": []

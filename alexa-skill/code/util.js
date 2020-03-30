@@ -6,11 +6,11 @@ const levenshtein = require('js-levenshtein');
 const config = require('./config.js')();
 
 module.exports.getRacePrediction = async () => {
-    if (!process.env.PREDICTION_ENDPOINT) {
+    if (!config.predictionEndpoint) {
         throw Error('Prediction endpoint missing - disabled predictions');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/predict/race');
+    const result = await axios.get(config.predictionEndpoint+'/predict/race');
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from race prediction request: ${result.status}`);
@@ -24,11 +24,11 @@ module.exports.getRacePrediction = async () => {
 };
 
 module.exports.getQualifyingPrediction = async () => {
-    if (!process.env.PREDICTION_ENDPOINT) {
+    if (!config.predictionEndpoint) {
         throw Error('Prediction endpoint missing - disabled predictions');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/predict/qualifying');
+    const result = await axios.get(config.predictionEndpoint+'/predict/qualifying');
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from qualifying prediction request: ${result.status}`);
@@ -42,11 +42,11 @@ module.exports.getQualifyingPrediction = async () => {
 };
 
 module.exports.getCalendar = async () => {
-    if (!process.env.PREDICTION_ENDPOINT) {
+    if (!config.predictionEndpoint) {
         throw Error('Prediction endpoint missing - disabled information');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+'/info/calendar');
+    const result = await axios.get(config.predictionEndpoint+'/info/calendar');
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from calendar request: ${result.status}`);
@@ -71,12 +71,12 @@ module.exports.searchForDriver = (result, handlerInput) => {
 
     console.info(`Received slot value of ${value}`);
 
-    if (!result.result || result.result.length === 0) {
+    if (!result || result.length === 0) {
         return null;
     }
 
     const valueAsNum = Number.parseInt(value, 10);
-    const drivers = result.result.map((driver, index) => {
+    const drivers = result.map((driver, index) => {
             let distanceValue = null;
             if (Number.isNaN(valueAsNum)) {
                 const valueSplit = value.split(' ');
@@ -125,11 +125,11 @@ module.exports.searchForRace = (result, handlerInput) => {
 
     console.info(`Received slot value of ${value}`);
 
-    if (!result.calendar || result.calendar.length === 0) {
+    if (!result|| result.length === 0) {
         return null;
     }
 
-    const races = result.calendar.map(race => {
+    const races = result.map(race => {
             const grandPrixName = race.race_name.split(' ').slice(0, -2).join(' ').toLowerCase();
             const circuitName = race.circuit_ref.replace('_', ' ').toLowerCase();
             const distanceValue = Math.min(
@@ -193,11 +193,11 @@ module.exports.formatRaceDate = date => {
 };
 
 module.exports.getDriversChampionship = async (year = null) => {
-    if (!process.env.PREDICTION_ENDPOINT) {
+    if (!config.predictionEndpoint) {
         throw Error('Prediction endpoint missing - disabled information');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+`/info/championship/drivers${year ? `/${year}` : ''}`);
+    const result = await axios.get(config.predictionEndpoint+`/info/championship/drivers${year ? `/${year}` : ''}`);
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from drivers championship request for year ${year}: ${result.status}`);
@@ -211,11 +211,11 @@ module.exports.getDriversChampionship = async (year = null) => {
 };
 
 module.exports.getConstructorsChampionship = async (year = null) => {
-    if (!process.env.PREDICTION_ENDPOINT) {
+    if (!config.predictionEndpoint) {
         throw Error('Prediction endpoint missing - disabled information');
     }
 
-    const result = await axios.get(process.env.PREDICTION_ENDPOINT+`/info/championship/constructors${year ? `/${year}` : ''}`);
+    const result = await axios.get(config.predictionEndpoint+`/info/championship/constructors${year ? `/${year}` : ''}`);
 
     if (result.status !== 200) {
         throw Error(`Did not receive status 200 from constructors championship request for year ${year}: ${result.status}`);
@@ -226,4 +226,38 @@ module.exports.getConstructorsChampionship = async (year = null) => {
     }
 
     return result;
+};
+
+module.exports.searchForConstructor = (result, handlerInput) => {
+    if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request ||
+        !handlerInput.requestEnvelope.request.intent || !handlerInput.requestEnvelope.request.intent.slots ||
+        !handlerInput.requestEnvelope.request.intent.slots.Team ||
+        !handlerInput.requestEnvelope.request.intent.slots.Team.value) {
+            return null;
+    }
+
+    const value = handlerInput.requestEnvelope.request.intent.slots.Team.value;
+
+    console.info(`Received slot value of ${value}`);
+
+    if (!result || result.length === 0) {
+        return null;
+    }
+
+    const constructors = result.map(constructor => {
+            return {
+                ...constructor,
+                distanceValue: levenshtein(constructor.constructor_name, value.toLowerCase())
+            }
+        })
+        .filter(constructor => {
+            return (constructor.distanceValue !== null) && (constructor.distanceValue <= config.levenshteinConstructorThreshold);
+        })
+        .sort((constructor1, constructor2) => constructor1.distanceValue - constructor2.distanceValue);
+
+    if (constructors.length === 1 || (constructors.length > 0 && (constructors[0].distanceValue !== null) && (constructors[0].distanceValue < constructors[1].distanceValue))) {
+        return constructors[0];
+    }
+
+    return null;
 };

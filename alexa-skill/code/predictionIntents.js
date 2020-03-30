@@ -56,7 +56,7 @@ const PredictRacePositionIntentHandler = {
         let speakOutput;
         try {
             const result = await getRacePrediction();
-            const searchedResult = searchForDriver(result.data, handlerInput);
+            const searchedResult = searchForDriver(result.data.result, handlerInput);
             if (!searchedResult) {
                 speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
                 For example, where will 44 finish at the next race`;
@@ -83,7 +83,7 @@ const PredictQualifyingPositionIntentHandler = {
         let speakOutput;
         try {
             const result = await getQualifyingPrediction();
-            const searchedResult = searchForDriver(result.data, handlerInput);
+            const searchedResult = searchForDriver(result.data.result, handlerInput);
             if (!searchedResult) {
                 speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
                 For example, where will 44 qualify at the next race`;

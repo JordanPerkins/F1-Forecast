@@ -76,7 +76,7 @@ const CalendarRaceIntentHandler = {
         let speakOutput;
         try {
             const result = await getCalendar();
-            const searchedRace = searchForRace(result.data, handlerInput);
+            const searchedRace = searchForRace(result.data.calendar, handlerInput);
             if (!searchedRace) {
                 speakOutput = `I coud not find the race you requested. You can use the race name, circuit name, circuit location or circuit country.`;
             } else {
