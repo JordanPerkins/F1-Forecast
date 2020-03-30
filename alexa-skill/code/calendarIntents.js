@@ -47,6 +47,7 @@ const GetFullCalendarIntentHandler = {
                 }
             }
             if (config.listMax < filteredRaces.length) {
+                speakOutput += '<break time="1s"/>Would you like me to continue?';
                 attributes.lastPosition = config.listMax;
                 attributes.lastResult = filteredRaces;
                 return handlerInput.responseBuilder

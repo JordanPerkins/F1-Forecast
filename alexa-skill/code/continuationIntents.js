@@ -33,6 +33,7 @@ const YesIntentHandler = {
         const attributes = handlerInput.attributesManager.getSessionAttributes();
         try {
             if (attributes.lastPosition && attributes.lastResult && attributes.lastIntent) {
+                console.info(`Yes received for ${attributes.lastIntent}: Last position is ${attributes.lastPosition}`);
                 for (let i = attributes.lastPosition; i < attributes.lastPosition+config.listMax; i++) {
                     if (i < attributes.lastResult.length) {
                         if (attributes.lastIntent === 'ReadRaceForecastIntent' || attributes.lastIntent === 'ReadQualifyingForecastIntent') {
@@ -44,12 +45,13 @@ const YesIntentHandler = {
                     }
                 }
                 if (attributes.lastPosition+config.listMax < attributes.lastResult.length) {
+                    speakOutput += '<break time="1s"/>Would you like me to continue?';
                     attributes.lastPosition = attributes.lastPosition+config.listMax;
                     attributes.lastResult = attributes.lastResult;
                     attributes.lastIntent = attributes.lastIntent;
                     return handlerInput.responseBuilder
                     .speak(speakOutput)
-                    .reprompt('Would you like me to continue?')
+                    .reprompt('<break time="1s"/>Would you like me to continue?')
                     .getResponse();
                 }
                 speakOutput += '<break time="1s"/>Summary concluded'

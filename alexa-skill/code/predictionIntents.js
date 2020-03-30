@@ -123,11 +123,12 @@ const ReadRaceForecastIntentHandler = {
                 }
             }
             if (config.listMax < data.result.length) {
+                speakOutput += '<break time="1s"/>Would you like me to continue?';
                 attributes.lastPosition = config.listMax;
-                attributes.lastResult = data;
+                attributes.lastResult = data.result;
                 return handlerInput.responseBuilder
                 .speak(speakOutput)
-                .reprompt('Would you like me to continue?')
+                .reprompt('<break time="1s"/>Would you like me to continue?')
                 .getResponse();
             }
             return handlerInput.responseBuilder
@@ -161,11 +162,12 @@ const ReadQualifyingForecastIntentHandler = {
                 }
             }
             if (config.listMax < data.result.length) {
+                speakOutput += '<break time="1s"/>Would you like me to continue?';
                 attributes.lastPosition = config.listMax;
-                attributes.lastResult = data;
+                attributes.lastResult = data.result;
                 return handlerInput.responseBuilder
                 .speak(speakOutput)
-                .reprompt('Would you like me to continue?')
+                .reprompt('<break time="1s"/>Would you like me to continue?')
                 .getResponse();
             }
             return handlerInput.responseBuilder
