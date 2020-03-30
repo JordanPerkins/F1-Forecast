@@ -10,7 +10,7 @@
       "code": {
         "default": {
           "src": "./code",
-          "lastDeployHash": "0QQjrq/4J+vRo/VT8YSwoUFzWTo="
+          "lastDeployHash": "htBCOpAmkdUU7tppWZ1vhJYNZUU="
         }
       },
       "skillInfrastructure": {
@@ -26,7 +26,7 @@
             "s3": {
               "bucket": "ask-alexa-skill-default-euwest2-1584199374246",
               "key": "endpoint/upload.zip",
-              "objectVersion": "AkvNp9UJmn2UGccmngrpo1iJc1NTSUC0"
+              "objectVersion": "J2NDBuR1jYl5vWdv2EkZuVyeZNMv.wH4"
             },
             "stackId": "arn:aws:cloudformation:eu-west-2:261804609555:stack/ask-F1Forecast-default-skillStack-1584199374246/b52ab2a0-6607-11ea-8e78-0a3915ca55a4"
           }

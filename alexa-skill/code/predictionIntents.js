@@ -182,11 +182,11 @@ const ReadQualifyingForecastIntentHandler = {
     }
 };
 
-module.exports = {
+module.exports = [
     PredictWinnerIntentHandler,
     PredictQualifyingIntentHandler,
     PredictRacePositionIntentHandler,
     PredictQualifyingPositionIntentHandler,
     ReadRaceForecastIntentHandler,
     ReadQualifyingForecastIntentHandler
-};
+];

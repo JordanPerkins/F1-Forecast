@@ -93,8 +93,8 @@ const ChampionshipConstructorIntentHandler = {
 };
 
 
-module.exports = {
+module.exports = [
     ChampionshipLeaderIntentHandler,
     ChampionshipDriverIntentHandler,
     ChampionshipConstructorIntentHandler
-};
+];

@@ -99,8 +99,8 @@ const CalendarRaceIntentHandler = {
 
 
 
-module.exports = {
+module.exports = [
     GetNextRaceIntentHandler,
     GetFullCalendarIntentHandler,
     CalendarRaceIntentHandler
-};
+];

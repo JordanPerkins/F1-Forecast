@@ -58,9 +58,9 @@ const SessionEndedRequestHandler = {
     }
 };
 
-module.exports = {
+module.exports = [
     LaunchRequestHandler,
     HelpIntentHandler,
     CancelAndStopIntentHandler,
     SessionEndedRequestHandler
-};
+];

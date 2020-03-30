@@ -69,7 +69,7 @@ const YesIntentHandler = {
     }
 };
 
-module.exports = {
+module.exports = [
     NoIntentHandler,
     YesIntentHandler
-};
+];
