@@ -280,3 +280,57 @@ module.exports.validateYear = handlerInput => {
 
     return value;
 };
+
+module.exports.getLastResult = async () => {
+    if (!config.predictionEndpoint) {
+        throw Error('Prediction endpoint missing - disabled information');
+    }
+
+    const result = await axios.get(config.predictionEndpoint+'/info/results/race');
+
+    if (result.status !== 200) {
+        throw Error(`Did not receive status 200 from race results request: ${result.status}`);
+    }
+
+    if (!result.data || typeof result.data !== 'object') {
+        throw Error('Did not receive data object');
+    }
+
+    return result;
+};
+
+module.exports.getLastQualifyingResult = async () => {
+    if (!config.predictionEndpoint) {
+        throw Error('Prediction endpoint missing - disabled information');
+    }
+
+    const result = await axios.get(config.predictionEndpoint+'/info/results/qualifying');
+
+    if (result.status !== 200) {
+        throw Error(`Did not receive status 200 from qualifying results request: ${result.status}`);
+    }
+
+    if (!result.data || typeof result.data !== 'object') {
+        throw Error('Did not receive data object');
+    }
+
+    return result;
+};
+
+module.exports.getQualifyingLap = driver => {
+    let lap = null;
+    if (driver.qualifying_q3) {
+        lap = driver.qualifying_q3;
+    } else if (driver.qualifying_q2) {
+        lap = driver.qualifying_q2;
+    } else if (driver.qualifying_q1) {
+        lap = driver.qualifying_q1;
+    }
+
+    const lapParts = lap.split(':');
+    if (lapParts.length === 2) {
+        return `${lapParts[0]} minute${lapParts[0] > 1 ? 's' : ''} ${lapParts[1]}`;
+    }
+
+    return lap;
+}

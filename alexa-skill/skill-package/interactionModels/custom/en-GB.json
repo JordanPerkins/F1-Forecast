@@ -284,6 +284,80 @@
                         "who was the world champion in {Year}",
                         "who finished first in {Year}"
                     ]
+                },
+                {
+                    "name": "LastWinnerIntent",
+                    "slots": [],
+                    "samples": [
+                        "who won the last race",
+                        "which driver won the last race",
+                        "who was the winner of the last race",
+                        "who won the last grand prix"
+                    ]
+                },
+                {
+                    "name": "LastPoleIntent",
+                    "slots": [],
+                    "samples": [
+                        "who was the last polesitter",
+                        "which driver was the last polesitter",
+                        "who was first in qualifying at the last race",
+                        "who won qualifying at the last race"
+                    ]
+                },
+                {
+                    "name": "LastRacePositionIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Driver",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where did {Driver} finish at the last race",
+                        "which position did {Driver} finish in at the last race",
+                        "what position did {Driver} finish in at the last race",
+                        "how did {Driver} do at the last race",
+                        "where did {Driver} finish"
+                    ]
+                },
+                {
+                    "name": "QualifyingPositionIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Driver",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "where did {Driver} qualify at the last race",
+                        "which position did {Driver} qualify in at the last race",
+                        "what position did {Driver} qualify in at the last race",
+                        "how did {Driver} do in qualifying at the last race",
+                        "where did {Driver} qualify"
+                    ]
+                },
+                {
+                    "name": "GetFullRaceResultIntent",
+                    "slots": 
+                    [],
+                    "samples": [
+                        "give me the last race result",
+                        "give me the results of the last race",
+                        "what were the results of the last race"
+                    ]
+                },
+                {
+                    "name": "GetFullQualifyingResultIntent",
+                    "slots": 
+                    [],
+                    "samples": [
+                        "give me the last qualifiyng result",
+                        "give me the results of the last qualifying",
+                        "what were the results of the last qualifying"
+                    ]
                 }
             ],
             "types": []

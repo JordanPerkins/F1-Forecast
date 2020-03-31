@@ -9,6 +9,7 @@ const continuationIntents = require('./continuationIntents.js');
 const genericIntents = require('./genericIntents.js');
 const calendarIntents = require('./calendarIntents.js');
 const championshipIntents = require('./championshipIntents.js');
+const resultIntents = require('./resultIntents.js');
 
 // Generic error handling to capture any syntax or routing errors. If you receive an error
 // stating the request handler chain is not found, you have not implemented a handler for
@@ -57,6 +58,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         ...genericIntents,
         ...calendarIntents,
         ...championshipIntents,
+        ...resultIntents,
         IntentReflectorHandler
     ) 
     .addErrorHandlers(ErrorHandler)

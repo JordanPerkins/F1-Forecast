@@ -36,7 +36,7 @@ const YesIntentHandler = {
                 console.info(`Yes received for ${attributes.lastIntent}: Last position is ${attributes.lastPosition}`);
                 for (let i = attributes.lastPosition; i < attributes.lastPosition+config.listMax; i++) {
                     if (i < attributes.lastResult.length) {
-                        if (attributes.lastIntent === 'ReadRaceForecastIntent' || attributes.lastIntent === 'ReadQualifyingForecastIntent') {
+                        if (attributes.lastIntent === 'ReadRaceForecastIntent' || attributes.lastIntent === 'ReadQualifyingForecastIntent' || attributes.lastIntent === 'GetFullRaceResultIntent' || attributes.lastIntent === 'GetFullQualifyingResultIntent') {
                             speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${attributes.lastResult[i].driver_forename} ${attributes.lastResult[i].driver_surname} </amazon:emotion>`;
                         } else if (attributes.lastIntent === 'GetFullCalendarIntent') {
                             const formattedDate = formatRaceDate(attributes.lastResult[i].race_date);
