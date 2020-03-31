@@ -261,3 +261,22 @@ module.exports.searchForConstructor = (result, handlerInput) => {
 
     return null;
 };
+
+module.exports.validateYear = handlerInput => {
+    if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request ||
+        !handlerInput.requestEnvelope.request.intent || !handlerInput.requestEnvelope.request.intent.slots ||
+        !handlerInput.requestEnvelope.request.intent.slots.Year ||
+        !handlerInput.requestEnvelope.request.intent.slots.Year.value) {
+            return null;
+    }
+
+    const value = handlerInput.requestEnvelope.request.intent.slots.Year.value;
+
+    console.info(`Received slot value of ${value}`);
+
+    if (Number.isNaN(value)) {
+        return null;
+    }
+
+    return value;
+};

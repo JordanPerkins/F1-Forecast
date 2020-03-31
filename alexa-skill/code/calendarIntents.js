@@ -56,7 +56,8 @@ const GetFullCalendarIntentHandler = {
                 .getResponse();
             }
             return handlerInput.responseBuilder
-            .speak(speakOutput);
+            .speak(speakOutput)
+            .getResponse();
         } catch(e) {
             console.error(`Error fetching result for GetFullCalendarIntentHandler: ${e}`);
             speakOutput = 'I was unable to get the race calendar at this time. Please check back later'

@@ -132,7 +132,8 @@ const ReadRaceForecastIntentHandler = {
                 .getResponse();
             }
             return handlerInput.responseBuilder
-            .speak(speakOutput);
+            .speak(speakOutput)
+            .getResponse();
         } catch(e) {
             console.error(`Error fetching result for ReadRaceForecastIntent: ${e}`);
             speakOutput = 'I was unable to make a race prediction at this time. Please check back later'
@@ -171,7 +172,8 @@ const ReadQualifyingForecastIntentHandler = {
                 .getResponse();
             }
             return handlerInput.responseBuilder
-            .speak(speakOutput);
+            .speak(speakOutput)
+            .getResponse();
         } catch(e) {
             console.error(`Error fetching result for ReadQualifyingForecastIntent: ${e}`);
             speakOutput = 'I was unable to make a qualifying prediction at this time. Please check back later'
@@ -190,3 +192,4 @@ module.exports = [
     ReadRaceForecastIntentHandler,
     ReadQualifyingForecastIntentHandler
 ];
+

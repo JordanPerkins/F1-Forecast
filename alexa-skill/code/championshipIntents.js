@@ -1,7 +1,7 @@
 'use strict';
 
 const Alexa = require('ask-sdk-core');
-const { getDriversChampionship,  getConstructorsChampionship, searchForDriver, searchForConstructor } = require('./util.js');
+const { getDriversChampionship, getConstructorsChampionship, searchForDriver, searchForConstructor, validateYear } = require('./util.js');
 const config = require('./config.js')();
 
 const ChampionshipLeaderIntentHandler = {
@@ -92,9 +92,129 @@ const ChampionshipConstructorIntentHandler = {
     }
 };
 
+const FullChampionshipDriverIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'FullChampionshipDriverIntent';
+    },
+    async handle(handlerInput) {
+        const attributes = handlerInput.attributesManager.getSessionAttributes();
+        attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
+        let speakOutput;
+        try {
+            const result = await getDriversChampionship();
+            const data = result.data;
+            speakOutput = `Here are the full drivers standings for the ${data.last_race_year} season. `
+            for (let i = 0; i < config.listMax; i++) {
+                if (i < data.standings.length) {
+                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.standings[i].driver_forename} ${data.standings[i].driver_surname} with ${data.standings[i].driver_points} points </amazon:emotion>`;
+                }
+            }
+            if (config.listMax < data.standings.length) {
+                speakOutput += '<break time="1s"/>Would you like me to continue?';
+                attributes.lastPosition = config.listMax;
+                attributes.lastResult = data.standings;
+                return handlerInput.responseBuilder
+                .speak(speakOutput)
+                .reprompt('Would you like me to continue?')
+                .getResponse();
+            }
+            return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();
+        } catch(e) {
+            console.error(`Error fetching result for FullChampionshipDriverIntentHandler: ${e}`);
+            speakOutput = 'I was unable to get the championship information at this time. Please check back later'
+            return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();
+        }
+    }
+};
+
+const FullChampionshipConstructorsIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'FullChampionshipConstructorsIntent';
+    },
+    async handle(handlerInput) {
+        const attributes = handlerInput.attributesManager.getSessionAttributes();
+        attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
+        let speakOutput;
+        try {
+            const result = await getConstructorsChampionship();
+            const data = result.data;
+            speakOutput = `Here are the full constructors standings for the ${data.last_race_year} season. `
+            for (let i = 0; i < config.listMax; i++) {
+                if (i < data.standings.length) {
+                    speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.standings[i].constructor_name} with ${data.standings[i].constructor_points} points </amazon:emotion>`;
+                }
+            }
+            if (config.listMax < data.standings.length) {
+                speakOutput += '<break time="1s"/>Would you like me to continue?';
+                attributes.lastPosition = config.listMax;
+                attributes.lastResult = data.standings;
+                return handlerInput.responseBuilder
+                .speak(speakOutput)
+                .reprompt('Would you like me to continue?')
+                .getResponse();
+            }
+            return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();
+        } catch(e) {
+            console.error(`Error fetching result for FullChampionshipConstructorIntentHandler: ${e}`);
+            speakOutput = 'I was unable to get the championship information at this time. Please check back later'
+ˇ
+        }
+    }
+};
+
+const WorldChampionIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'WorldChampionIntent';
+    },
+    async handle(handlerInput) {
+        let speakOutput;
+        try {
+            const year = validateYear(handlerInput);
+            if (!year) {
+                speakOutput = 'Please provide a valid season year. For example, who was world champion in 2009'
+            } else {
+                const [driversResult, constructorsResult] = await Promise.all([
+                    getDriversChampionship(year),
+                    getConstructorsChampionship(year)
+                ]);
+                if (!driversResult.data.standings.length || !constructorsResult.data.standings.length) {
+                    speakOutput = 'Please provide a valid season year. For example, who was world champion in 2009'
+                } else {
+                    speakOutput = `The driver's world champion in ${year} was ${driversResult.data.standings[0].driver_nationality} driver
+                    ${driversResult.data.standings[0].driver_forename} ${driversResult.data.standings[0].driver_surname} with ${driversResult.data.standings[0].driver_points} points
+                    and ${driversResult.data.standings[0].driver_wins} wins. The constructor's world champion was ${constructorsResult.data.standings[0].constructor_nationality} constructor
+                    ${constructorsResult.data.standings[0].constructor_name} with ${constructorsResult.data.standings[0].constructor_points} points and
+                    ${constructorsResult.data.standings[0].constructor_wins} wins.`;
+                }
+            }
+            return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();       
+        } catch(e) {
+            console.error(`Error fetching result for WorldChampionIntentHandler: ${e}`);
+            speakOutput = 'I was unable to get the championship information at this time. Please check back later'
+        }
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .getResponse();
+    }
+};
+
 
 module.exports = [
     ChampionshipLeaderIntentHandler,
     ChampionshipDriverIntentHandler,
-    ChampionshipConstructorIntentHandler
+    ChampionshipConstructorIntentHandler,
+    FullChampionshipDriverIntentHandler,
+    FullChampionshipConstructorsIntentHandler,
+    WorldChampionIntentHandler
 ];

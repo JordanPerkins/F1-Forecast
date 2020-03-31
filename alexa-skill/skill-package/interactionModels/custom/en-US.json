@@ -232,6 +232,46 @@
                         "what position is {Team} in the constructors championship",
                         "what position is {Team} in the constructors championship"
                     ]
+                },
+                {
+                    "name": "FullChampionshipDriverIntent",
+                    "slots": 
+                    [
+                    ],
+                    "samples": [
+                        "give me the full championship standings",
+                        "give me the full drivers championship standings",
+                        "read the full championship standings",
+                        "read the full drivers championship standings"
+                    ]
+                },
+                {
+                    "name": "FullChampionshipConstructorsIntent",
+                    "slots": 
+                    [
+                    ],
+                    "samples": [
+                        "give me the full constructors championship standings",
+                        "read the full constructors championship standings",
+                        "give me the full teams championship standings",
+                        "read the full teams championship standings"
+                    ]
+                },
+                {
+                    "name": "WorldChampionIntent",
+                    "slots": 
+                    [
+                        {
+                            "name": "Year",
+                            "type": "AMAZON.FOUR_DIGIT_NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "who was world champion in {Year}",
+                        "who won the championship in {Year}",
+                        "who was the world champion in {Year}",
+                        "who finished first in {Year}"
+                    ]
                 }
             ],
             "types": []
