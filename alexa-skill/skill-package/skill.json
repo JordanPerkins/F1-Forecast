@@ -3,14 +3,14 @@
     "publishingInformation": {
       "locales": {
         "en-US": {
-          "summary": "A Formula One skill with a difference. Not only can F1 forecast keep you up to date with the lastest F1 information, it also makes result predictions!",
+          "summary": "A Formula One skill with a difference. Not only can F1 forecast keep you up to date with the latest F1 information, it also makes result predictions!",
           "examplePhrases": [
             "Alexa, ask f. one forecast which driver will win the next race",
             "Alexa, ask f. one forecast what date the Singapore grand prix is",
             "Alexa, ask f. one forecast where Charles Leclerc qualified at the last race"
           ],
           "name": "F1 Forecast",
-          "description": "F1 forecast is an assistant for Formula One fans with a difference.\n\nLike all F1 skills, it can keep you up to date with the lastest drivers and constructors standings, tell you what happened in the last race and make sure you don't miss an upcoming race by informing on the season calendar.\n\nIn addition to this however, through the use of Machine Learning on historical data from the beginning of the Formula One world championship, the skill can make predictions about the results of the next qualifying and race sessions!\n\nThe capabilities of the skill are as follows:\n- Predict winner, position for a spcific driver, or a full result for the next race and qualifying sessions.\n- List the full season calendar, provide the date of a specific race or the upcoming race.\n- Provide the current drivers and constructors championship leader, the position of a specific driver or team, or the full standings.\n- Provide the winner or polesitter from the last race, the position of a specific driver, or the full set of results.",
+          "description": "F1 forecast is an assistant for Formula One fans with a difference.\n\nLike all F1 skills, it can keep you up to date with the latest drivers and constructors standings, tell you what happened in the last race and make sure you don't miss an upcoming race by informing on the season calendar.\n\nIn addition to this however, through the use of Machine Learning on historical data from the beginning of the Formula One world championship, the skill can make predictions about the results of the next qualifying and race sessions!\n\nThe capabilities of the skill are as follows:\n- Predict winner, position for a spcific driver, or a full result for the next race and qualifying sessions.\n- List the full season calendar, provide the date of a specific race or the upcoming race.\n- Provide the current drivers and constructors championship leader, the position of a specific driver or team, or the full standings.\n- Provide the winner or polesitter from the last race, the position of a specific driver, or the full set of results.",
           "smallIconUri": "file://assets/logosmall.png",
           "largeIconUri": "file://assets/logo.png",
           "keywords": [
@@ -26,14 +26,14 @@
           ]
         },
         "en-GB": {
-          "summary": "A Formula One skill with a difference. Not only can F1 forecast keep you up to date with the lastest F1 information, it also makes result predictions!",
+          "summary": "A Formula One skill with a difference. Not only can F1 forecast keep you up to date with the latest F1 information, it also makes result predictions!",
           "examplePhrases": [
             "Alexa, ask f. one forecast which driver will win the next race",
             "Alexa, ask f. one forecast what date the Singapore grand prix is",
             "Alexa, ask f. one forecast where Charles Leclerc qualified at the last race"
           ],
           "name": "F1 Forecast",
-          "description": "F1 forecast is an assistant for Formula One fans with a difference.\n\nLike all F1 skills, it can keep you up to date with the lastest drivers and constructors standings, tell you what happened in the last race and make sure you don't miss an upcoming race by informing on the season calendar.\n\nIn addition to this however, through the use of Machine Learning on historical data from the beginning of the Formula One world championship, the skill can make predictions about the results of the next qualifying and race sessions!\n\nThe capabilities of the skill are as follows:\n- Predict winner, position for a spcific driver, or a full result for the next race and qualifying sessions.\n- List the full season calendar, provide the date of a specific race or the upcoming race.\n- Provide the current drivers and constructors championship leader, the position of a specific driver or team, or the full standings.\n- Provide the winner or polesitter from the last race, the position of a specific driver, or the full set of results.",
+          "description": "F1 forecast is an assistant for Formula One fans with a difference.\n\nLike all F1 skills, it can keep you up to date with the latest drivers and constructors standings, tell you what happened in the last race and make sure you don't miss an upcoming race by informing on the season calendar.\n\nIn addition to this however, through the use of Machine Learning on historical data from the beginning of the Formula One world championship, the skill can make predictions about the results of the next qualifying and race sessions!\n\nThe capabilities of the skill are as follows:\n- Predict winner, position for a spcific driver, or a full result for the next race and qualifying sessions.\n- List the full season calendar, provide the date of a specific race or the upcoming race.\n- Provide the current drivers and constructors championship leader, the position of a specific driver or team, or the full standings.\n- Provide the winner or polesitter from the last race, the position of a specific driver, or the full set of results.",
           "smallIconUri": "file://assets/logosmall.png",
           "largeIconUri": "file://assets/logo.png",
           "keywords": [
