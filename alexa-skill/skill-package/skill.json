@@ -50,7 +50,7 @@
         }
       },
       "isAvailableWorldwide": true,
-      "testingInstructions": "Drivers to use to test the Driver slot: Lewis Hamilton, Valtteri Bottas, Max Verstappen, Charles Leclerc, Sebastian Vettel, Carlos Sainz, Pierre Gasly, Alexander Albon, Daniel Ricciardo, Sergio Perez, Lando Norris, Kimi Räikkönen, Daniil Kyvat, Nico Hulkenberg, Lance Stroll, Kevin Magnussen, Antonio Giovinazzi, Romain Grosjean, Robert Kubica, George Russell\nTeams to use in the Teams slot: Mercedes, Red Bull, Ferrari, McLaren, Toro Rosso, Renault, Racing Point, Haas, Alfa Romeo, Williams",
+      "testingInstructions": "Drivers to use to test the Driver slot: Lewis Hamilton, Valtteri Bottas, Max Verstappen, Charles Leclerc, Sebastian Vettel, Carlos Sainz, Pierre Gasly, Alexander Albon, Daniel Ricciardo, Sergio Perez, Lando Norris, Kimi Räikkönen, Daniil Kyvat, Nico Hulkenberg, Lance Stroll, Kevin Magnussen, Antonio Giovinazzi, Romain Grosjean, Robert Kubica, George Russell\nTeams to use in the Teams slot: Mercedes, Red Bull, Ferrari, McLaren, Toro Rosso, Renault, Racing Point, Haas, Alfa Romeo, Williams\nRaces to use in the race slot: Canadian, French, Austrian, British, Hungarian, Belgian, Italian, Singapore, Russian, Japanese, United States, Mexican, Brazilian, Abu Dhabi, Chinese",
       "category": "SPORTS_NEWS",
       "distributionCountries": []
     },
