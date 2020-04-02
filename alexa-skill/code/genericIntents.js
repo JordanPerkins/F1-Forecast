@@ -8,7 +8,7 @@ const LaunchRequestHandler = {
     },
     handle(handlerInput) {
         const speakOutput = `Welcome to F1 forecast. You can ask me a question such as who do you think will win the next grand prix 
-        or who was first in the last qualifying session. For detailed information on the full capabilities of this application, just ask for help. 
+        or who was the last polesitter. For detailed information on the full capabilities of this application, just ask for help. 
         What would you like me to do?`;
         return handlerInput.responseBuilder
             .speak(speakOutput)

@@ -16,7 +16,7 @@ const LastWinnerIntentHandler = {
             const result = await getLastResult();
             const data = result.data;
             speakOutput = `${data.results[0].driver_nationality} driver ${data.results[0].driver_forename} ${data.results[0].driver_surname} won the ${data.last_race_year}
-            ${data.last_race_name} grand prix after starting on the grid in <say-as interpret-as="ordinal">${data.results[0].race_grid}</say-as> position, scoring ${data.results[0].race_points} points`;
+            ${data.last_race_name} grand prix after starting on the grid in <say-as interpret-as="ordinal">${data.results[0].race_grid}</say-as> position, scoring ${data.results[0].race_points} point${data.results[0].race_points === 1 ? '' : 's'}`;
         } catch(e) {
             console.error(`Error fetching result for LastWinnerIntentHandler: ${e}`);
             speakOutput = 'I was unable to retrieve race result information at this time. Please check back later'
@@ -66,7 +66,7 @@ const LastRacePositionIntentHandler = {
             } else {
                 speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ${searchedResult.driver_surname} finished
                 in <say-as interpret-as="ordinal">${searchedResult.race_position}</say-as> at the ${result.data.last_race_year} ${result.data.last_race_name} grand prix,
-                scoring ${searchedResult.race_points} points.`;
+                scoring ${searchedResult.race_points} point${searchedResult.race_points === 1 ? '' : 's'}.`;
             }
         } catch(e) {
             console.error(`Error fetching result for LastRacePositionIntentHandler: ${e}`);
