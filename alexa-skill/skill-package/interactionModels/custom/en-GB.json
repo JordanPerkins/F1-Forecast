@@ -47,7 +47,16 @@
                         "which driver will be first in the next race",
                         "predict who will be first in the next race",
                         "predict which driver will be first in the next race",
-                        "predict which driver will be first"
+                        "predict which driver will be first",
+                        "who do you think will win",
+                        "who do you think will win the next race",
+                        "predict who you think will win the next race",
+                        "who will win the next grand prix",
+                        "predict who will win the next grand prix",
+                        "predict which driver will win the next grand prix",
+                        "who will be first in the next grand prix",
+                        "which driver will be first in the next grand prix",
+                        "who do you think will win the next gand prix"
                     ]
                 },
                 {
@@ -69,7 +78,21 @@
                         "which driver will be fastest at the next race",
                         "predict which driver will be first in qualifying at the next race",
                         "predict which driver will be first in qualifying",
-                        "which driver will be first in qualifying"
+                        "which driver will be first in qualifying",
+                        "who will be in pole at the next grand prix",
+                        "predict who will be on pole at the next grand prix",
+                        "predict who will be fastest in qualifying at the next grand prix",
+                        "who will get pole at the next grand prix",
+                        "predict who will be first in qualifying at the next grand prix",
+                        "predict which driver will be fastest in qualifying at the next grand prix",
+                        "predict which driver will be first in qualifying at the next grand prix",
+                        "which driver will be first in qualifying at the next grand prix",
+                        "which driver will be the polesitter",
+                        "which driver will be the polesitter at the next race",
+                        "which driver will be the polesitter at the next grand prix",
+                        "predict who will be the polesitter",
+                        "predict who will be the polesitter at the next race",
+                        "predict who will be the polesitter at the next grand prix"
                     ]
                 },
                 {
@@ -83,12 +106,28 @@
                     ],
                     "samples": [
                         "where will {Driver} finish at the next race",
+                        "where {Driver} will finish at the next race",
                         "which position will {Driver} finish in at the next race",
+                        "which position {Driver} will finish in at the next race",
                         "predict where {Driver} will finish at the next race",
                         "what position will {Driver} finish in at the next race",
+                        "what position {Driver} will finish in at the next race",
                         "how will {Driver} do at the next race",
+                        "how {Driver} will do at the next race",
                         "where will {Driver} finish",
-                        "predict where {Driver} will finish"
+                        "where {Driver} will finish",
+                        "predict where {Driver} will finish",
+                        "where will {Driver} finish at the next grand prix",
+                        "where {Driver} will finish at the next grand prix",
+                        "which position will {Driver} finish in at the next grand prix",
+                        "which position {Driver} will finish in at the next grand prix",
+                        "predict where {Driver} will finish at the next grand prix",
+                        "what position will {Driver} finish in at the next grand prix",
+                        "what position {Driver} will finish in at the next grand prix",
+                        "how will {Driver} do at the next grand prix",
+                        "how {Driver} will do at the next grand prix",
+                        "will {Driver} win the next race",
+                        "will {Driver} win the next grand prix"
                     ]
                 },
                 {
@@ -102,12 +141,29 @@
                     ],
                     "samples": [
                         "where will {Driver} qualify at the next race",
+                        "where {Driver} will qualify at the next race",
                         "which position will {Driver} qualify in at the next race",
+                        "which position {Driver} will qualify in at the next race",
                         "predict where {Driver} will qualify at the next race",
                         "what position will {Driver} qualify in at the next race",
+                        "what position {Driver} will qualify in at the next race",
                         "how will {Driver} do in qualifying at the next race",
                         "where will {Driver} qualify",
-                        "predict where {Driver} will qualify"
+                        "how {Driver} will do in qualifying at the next race",
+                        "predict where {Driver} will qualify",
+                        "where will {Driver} qualify at the next grand prix",
+                        "where {Driver} will qualify at the next grand prix",
+                        "which position will {Driver} qualify in at the next grand prix",
+                        "which position {Driver} will qualify in at the next grand prix",
+                        "predict where {Driver} will qualify at the next grand prix",
+                        "what position will {Driver} qualify in at the next grand prix",
+                        "what position {Driver} will qualify in at the next grand prix",
+                        "how will {Driver} do in qualifying at the next grand prix",
+                        "how {Driver} will do in qualifying at the next grand prix",
+                        "will {Driver} get pole at the next race",
+                        "will {Driver} get pole at the next grand prix",
+                        "will {Driver} be on pole at the next race",
+                        "will {Driver} be on pole at the next grand prix"
                     ]
                 },
                 {
@@ -119,7 +175,20 @@
                         "give me the race predictions",
                         "predict the race",
                         "predict the race outcome",
-                        "the forecast"
+                        "give me the full race prediction",
+                        "give me the full race outcome",
+                        "give me all race predictions",
+                        "give me the forecast",
+                        "predict the next race",
+                        "predict the next grand prix",
+                        "the forecast",
+                        "the race forecast",
+                        "tell me the race forecast",
+                        "tell me the race predictions",
+                        "tell me the full race prediction",
+                        "tell me the full race outcome",
+                        "tell me all race predictions",
+                        "tell me the forecast"              
                     ]
                 },
                 {
@@ -130,7 +199,19 @@
                         "give me the qualifying forecast",
                         "give me the qualifying predictions",
                         "predict qualifying",
-                        "predict the qualifying outcome"
+                        "predict the qualifying outcome",
+                        "give me the full qualifying prediction",
+                        "give me all qualifying predictions",
+                        "give me the qualifying forecast",
+                        "predict qualifying at the next race",
+                        "predict qualifying at the next grand prix",
+                        "the qualifying forecast",
+                        "tell me the qualifying forecast",
+                        "tell me the qualifying predictions",
+                        "tell me the full qualifying prediction",
+                        "tell me the full qualifying outcome",
+                        "tell me all qualifying predictions",
+                        "tell me the qualifying forecast"
                     ]
                 },
                 {
@@ -142,10 +223,15 @@
                         "when is the next race",
                         "when is the next grand prix",
                         "what is the next race",
-                        "when is the next f. one race",
-                        "when is the next formula one race",
                         "what is the upcoming race",
-                        "what is the upcoming grand prix"
+                        "what is the upcoming grand prix",
+                        "tell me the next race",
+                        "tell me when the next race is",
+                        "tell me when the next grand prix is",
+                        "tell me when the upcoming race is",
+                        "tell me when the upcoming grand prix is",
+                        "what is the date of the next race",
+                        "what is the date of the next grand prix"
                     ]
                 },
                 {
@@ -157,8 +243,20 @@
                         "give me the full calendar",
                         "give me the full race calendar",
                         "give me the full list of races",
+                        "give me the races this season",
                         "what is the season calendar",
-                        "what are the races this season"
+                        "what are the races this season",
+                        "give me the full grand prix calendar",
+                        "give me the full grand prix calendar",
+                        "give me the full list of grand prixs",
+                        "tell me the race calendar",
+                        "tell me the full calendar",
+                        "tell me the full list of races",
+                        "tell me the season calendar",
+                        "tell me the races this season",
+                        "tell me the full grand prix calendar",
+                        "tell me the full grand prix calendar",
+                        "give me the full grand prix calendar"
                     ]
                 },
                 {
@@ -172,11 +270,17 @@
                     ],
                     "samples": [
                         "when is the {Race} grand prix",
+                        "when the {Race} grand prix is",
                         "when is the {Race} g.p.",
+                        "when the {Race} g.p. is",
                         "when is the {Race} race",
+                        "when the {Race} race is",
                         "what date is the {Race} grand prix",
-                        "what date is the {Race} gp",
+                        "what date the {Race} grand prix is",
+                        "what date is the {Race} g.p.",
+                        "what date the {Race} g.p. is",
                         "what date is the {Race} race",
+                        "what date the {Race} race is",
                         "what is the date of the {Race} grand prix",
                         "what is the date of the {Race} g.p.",
                         "what is the date of the {Race} race",
@@ -196,11 +300,15 @@
                         "who is the leader of the championship",
                         "who is first in the championship",
                         "who leads the championship",
+                        "who is top of the championship",
                         "who is the leader of the drivers championship",
+                        "who is top of the drivers championship",
                         "who is first in the drivers championship",
                         "who leads the drivers championship",
+                        "who is top of the drivers championship",
                         "who is the leader of the constructors championship",
                         "who is in first in the constructors championship",
+                        "who is top of the constructors championship",
                         "who leads the constructors championship",
                         "which driver leads the championship",
                         "which constructor leads the championship"
@@ -217,15 +325,23 @@
                     ],
                     "samples": [
                         "where is {Driver} in the standings",
+                        "where {Driver} is in the standings",
                         "where is {Driver} in the championship standings",
+                        "where {Driver} is in the championship standings",
                         "where is {Driver} in the championship",
+                        "where {Driver} is in the championship",
                         "what position is {Driver} in the championship",
-                        "what position is {Driver} in the championship",
+                        "what position {Driver} is in the championship",
                         "where is {Driver} in the drivers standings",
+                        "where {Driver} is in the drivers standings",
                         "where is {Driver} in the drivers championship standings",
+                        "where {Driver} is in the drivers championship standings",
                         "where is {Driver} in the drivers championship",
+                        "where {Driver} is in the drivers championship",
                         "what position is {Driver} in the drivers championship",
-                        "what position is {Driver} in the drivers championship"
+                        "what position {Driver} is in the drivers championship",
+                        "how {Driver} is doing in the championship",
+                        "how {Driver} is doing in the drivers championship"
                     ]
                 },
                 {
@@ -239,10 +355,14 @@
                     ],
                     "samples": [
                         "where is {Team} in the constructors standings",
+                        "where {Team} is in the constructors standings",
                         "where is {Team} in the constructors championship standings",
+                        "where {Team} is in the constructors championship standings",
                         "where is {Team} in the constructors championship",
                         "what position is {Team} in the constructors championship",
-                        "what position is {Team} in the constructors championship"
+                        "what position {Team} is in the constructors championship",
+                        "what position is {Team} in the constructors championship",
+                        "how {Team} is doing in the constructors championship"
                     ]
                 },
                 {
@@ -254,7 +374,17 @@
                         "give me the full championship standings",
                         "give me the full drivers championship standings",
                         "read the full championship standings",
-                        "read the full drivers championship standings"
+                        "read the full drivers championship standings",
+                        "tell me the full championship standings",
+                        "tell me the full drivers championship standings",
+                        "give me the full standings",
+                        "tell me the full standings",
+                        "give me the full championship table",
+                        "give me the full drivers championship table",
+                        "read me the full championship table",
+                        "read me the full drivers championship table",
+                        "tell me the full championship table",
+                        "tell me the full drivers championship table"
                     ]
                 },
                 {
@@ -266,7 +396,13 @@
                         "give me the full constructors championship standings",
                         "read the full constructors championship standings",
                         "give me the full teams championship standings",
-                        "read the full teams championship standings"
+                        "read the full teams championship standings",
+                        "tell me the full constructors championship standings",
+                        "tell me the full teams championship standings",
+                        "give me the full constructors championship table",
+                        "read me the full contructors championship table",
+                        "read me the full teams championship table",
+                        "tell me the full teams championship table"
                     ]
                 },
                 {
@@ -280,9 +416,24 @@
                     ],
                     "samples": [
                         "who was world champion in {Year}",
+                        "who the world champion in {Year} was",
                         "who won the championship in {Year}",
                         "who was the world champion in {Year}",
-                        "who finished first in {Year}"
+                        "who finished first in {Year}",
+                        "which driver won the championship in {Year}",
+                        "which driver was first in {Year}",
+                        "which driver was first in the championship in {Year}",
+                        "which team was first in {Year}",
+                        "which team was first in the championship in {Year}",
+                        "which driver finished first in {Year}",
+                        "which driver finished first in the championship in {Year}",
+                        "which team finished first in {Year}",
+                        "which team finished first in the championship in {Year}",
+                        "who finished first in the {Year} championship",
+                        "which driver won the {Year} championship",
+                        "which driver finished first in the {Year} championship",
+                        "which team won the {Year} championship",
+                        "which team finished first in the {Year} championship"
                     ]
                 },
                 {
@@ -292,7 +443,11 @@
                         "who won the last race",
                         "which driver won the last race",
                         "who was the winner of the last race",
-                        "who won the last grand prix"
+                        "who won the last grand prix",
+                        "which driver won the last grand prix",
+                        "who the last winner was",
+                        "who the winner of the last race was",
+                        "who the winner of the last grand prix was"
                     ]
                 },
                 {
@@ -302,7 +457,19 @@
                         "who was the last polesitter",
                         "which driver was the last polesitter",
                         "who was first in qualifying at the last race",
-                        "who won qualifying at the last race"
+                        "who won qualifying at the last race",
+                        "who was on pole at the last race",
+                        "who was the polesitter at the last race",
+                        "which driver was on pole at the last race",
+                        "who which driver was first in qualifying at the last race",
+                        "which driver won qualifying at the last race",
+                        "who was first in qualifying at the last grand prix",
+                        "who won qualifying at the last grand prix",
+                        "who was on pole at the last grand prix",
+                        "who was the polesitter at the last grand prix",
+                        "which driver was on pole at the last grand prix",
+                        "who which driver was first in qualifying at the last grand prix",
+                        "which driver won qualifying at the last grand prix"
                     ]
                 },
                 {
@@ -316,10 +483,22 @@
                     ],
                     "samples": [
                         "where did {Driver} finish at the last race",
+                        "where {Driver} finished at the last race",
                         "which position did {Driver} finish in at the last race",
+                        "which position {Driver} finished in at the last race",
                         "what position did {Driver} finish in at the last race",
                         "how did {Driver} do at the last race",
-                        "where did {Driver} finish"
+                        "how {Driver} did at the last race",
+                        "where did {Driver} finish",
+                        "where {Driver} finished",
+                        "where did {Driver} finish at the last grand prix",
+                        "where {Driver} finished at the last grand prix",
+                        "which position did {Driver} finish in at the last grand prix",
+                        "which position {Driver} finished in at the last grand prix",
+                        "what position did {Driver} finish in at the last grand prix",
+                        "how did {Driver} do in the last grand prix",
+                        "how {Driver} did in the last grand prix"         
+                    
                     ]
                 },
                 {
@@ -333,10 +512,21 @@
                     ],
                     "samples": [
                         "where did {Driver} qualify at the last race",
+                        "where {Driver} qualified at the last race",
                         "which position did {Driver} qualify in at the last race",
                         "what position did {Driver} qualify in at the last race",
+                        "what position {Driver} qualified in at the last race",
                         "how did {Driver} do in qualifying at the last race",
-                        "where did {Driver} qualify"
+                        "how {Driver} did in qualifying at the last race",
+                        "where did {Driver} qualify",
+                        "where {Driver} qualified",
+                        "where did {Driver} qualify at the last grand prix",
+                        "where {Driver} qualified at the last grand prix",
+                        "which position did {Driver} qualify in at the last grand prix",
+                        "what position did {Driver} qualify in at the last grand prix",
+                        "what position {Driver} qualified in at the last grand prix",
+                        "how did {Driver} do in qualifying at the last grand prix",
+                        "how {Driver} did in qualifying at the last grand prix"
                     ]
                 },
                 {
@@ -345,8 +535,21 @@
                     [],
                     "samples": [
                         "give me the last race result",
+                        "give me the full result of the last race",
                         "give me the results of the last race",
-                        "what were the results of the last race"
+                        "what were the results of the last race",
+                        "give me the finishing positions of the last race",
+                        "tell me the last race result",
+                        "tell me the full result of the last race",
+                        "tell me the results of the last race",
+                        "give me the last grand prix result",
+                        "give me the full result of the last grand prix",
+                        "give me the results of the last grand prix",
+                        "what were the results of the last grand prix",
+                        "give me the finishing positions of the last grand prix",
+                        "tell me the last race result",
+                        "tell me the full result of the last grand prix",
+                        "tell me the results of the last grand prix"
                     ]
                 },
                 {
@@ -355,8 +558,16 @@
                     [],
                     "samples": [
                         "give me the last qualifiyng result",
+                        "give me the full result of the last qualifying",
                         "give me the results of the last qualifying",
-                        "what were the results of the last qualifying"
+                        "what were the results of the last qualifying",
+                        "give me the finishing posiitions of the last qualifying",
+                        "give me the last result in qualifying at the last race",
+                        "give me the full result of qualifying at the last race",
+                        "what were the results of qualifying at the last race",
+                        "give me the last result in qualifying at the last grand prix",
+                        "give me the full result of qualifying at the last grand prix",
+                        "what were the results of qualifying at the last grand prix"
                     ]
                 }
             ],
@@ -364,4 +575,3 @@
         }
     }
   }
-  

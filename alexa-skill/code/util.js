@@ -274,7 +274,7 @@ module.exports.validateYear = handlerInput => {
 
     console.info(`Received slot value of ${value}`);
 
-    if (Number.isNaN(value)) {
+    if (Number.isNaN(Number.parseInt(value, 10))) {
         return null;
     }
 
