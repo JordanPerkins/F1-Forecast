@@ -119,12 +119,14 @@ class Database:
         cursor = self.query("INSERT INTO drivers "
              "(driverRef, number, code, forename, surname, dob, nationality, url) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (driver_ref, number, code, forename, surname, dob, nationality, url))
+        self.db.commit()
         return cursor.lastrowid
 
     def insert_constructor(self, constructor_ref, name, nationality, url):
         cursor = self.query("INSERT INTO constructors "
              "(constructorRef, name, nationality, url) "
             "VALUES (%s, %s, %s, %s)", (constructor_ref, name, nationality, url))
+        self.db.commit()
         return cursor.lastrowid
 
     def insert_result(
@@ -139,12 +141,14 @@ class Database:
             (race_id, driver_id, constructor_id, number, grid, position, position_text, position_order, points, laps, time,
             milliseconds, fastest_lap, rank, fastest_lap_time, fastest_lap_speed, status_id)
         )
+        self.db.commit()
         return cursor.rowcount
 
     def insert_qualifying(self, race_id, driver_id, constructor_id, number, position, q1, q2, q3, q1Seconds, q2Seconds, q3Seconds):
         cursor = self.query("INSERT INTO qualifying "
              "(raceId, driverId, constructorId, number, position, q1, q2, q3, q1Seconds, q2Seconds, q3Seconds) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (race_id, driver_id, constructor_id, number, position, q1, q2, q3, q1Seconds, q2Seconds, q3Seconds))
+        self.db.commit()
         return cursor.rowcount
 
     def get_next_missing_season(self):
@@ -159,12 +163,14 @@ class Database:
         cursor = self.query("INSERT INTO circuits "
              "(circuitRef, name, location, country, lat, lng, url) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s)", (circuit_ref, circuit_name, locality, country, lat, lng, url))
+        self.db.commit()
         return cursor.lastrowid
 
     def insert_race(self, year, round_num, circuitId, name, date, time, url):
         cursor = self.query("INSERT INTO races "
              "(year, round, circuitId, name, date, time, url) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s)", (year, round_num, circuitId, name, date, time, url))
+        self.db.commit()
         return cursor.rowcount
 
     def delete_race(self, race_id):
@@ -219,4 +225,26 @@ class Database:
 
     def get_qualifying_results(self, race):
         cursor = self.query("SELECT qualifyId, driverRef, drivers.number, drivers.code, forename, surname, dob, nationality, url, position, q1, q2, q3 FROM qualifying INNER JOIN drivers ON drivers.driverId=qualifying.driverId WHERE raceId = %s ORDER BY -position DESC;", (race,))
+        return cursor.fetchall()
+
+    def insert_race_log(self, driverId, position, featureHash, time):
+        cursor = self.query("INSERT INTO racePredictionLog (driverId, position, featureHash, time) VALUES (%s, %s, %s, %s);",
+            (driverId, position, featureHash, time)
+        )
+        self.db.commit()
+        return cursor.rowcount
+
+    def get_race_log(self, featureHash):
+        cursor = self.query("SELECT drivers.* FROM racePredictionLog INNER JOIN drivers ON drivers.driverId=racePredictionLog.driverId WHERE featureHash = %s AND time >= (NOW() - INTERVAL 2 WEEK) ORDER BY position ASC;", (featureHash,))
+        return cursor.fetchall()
+
+    def insert_qualifying_log(self, driverId, position, featureHash, time, delta):
+        cursor = self.query("INSERT INTO qualifyingPredictionLog (driverId, position, featureHash, time, delta) VALUES (%s, %s, %s, %s, %s);",
+            (driverId, position, featureHash, time, delta)
+        )
+        self.db.commit()
+        return cursor.rowcount
+
+    def get_qualifying_log(self, featureHash):
+        cursor = self.query("SELECT drivers.*, delta FROM qualifyingPredictionLog INNER JOIN drivers ON drivers.driverId=qualifyingPredictionLog.driverId WHERE featureHash = %s AND time >= (NOW() - INTERVAL 2 WEEK) ORDER BY position ASC;", (featureHash,))
         return cursor.fetchall()

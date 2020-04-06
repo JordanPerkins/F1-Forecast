@@ -6,6 +6,9 @@ import logging
 import traceback
 from .db import Database
 from .utils import tuples_to_dictionary, replace_none_with_average
+import time
+import datetime
+import hashlib
 
 db = Database.get_database()
 
@@ -55,6 +58,14 @@ def results_to_ranking(predictions):
     sorted_predictions = sorted(predictions_list_tuples, key=lambda item: item[1])
     return sorted_predictions
 
+def generate_feature_hash(race_name, deltas, differences, fastest_lap, season_change):
+    deltas_as_string = (',').join([str(delta) for delta in deltas])
+    differences_as_string = (',').join([str(diff) for diff in differences])
+    fastest_lap_as_string = str(fastest_lap)
+    season_change_as_string = str(season_change)
+    hash_string = race_name + deltas_as_string + differences_as_string + fastest_lap_as_string + season_change_as_string
+    hash_result = hashlib.sha256(hash_string.encode()).hexdigest()
+    return hash_result
 
 def predict(race_id):
     race = race_id
@@ -86,6 +97,13 @@ def predict(race_id):
         'season_change': np.array([season_change]*len(drivers_to_predict))
     }
 
+    feature_hash = generate_feature_hash(race_name, deltas, differences, fastest_lap, season_change)
+
+    cached_result = db.get_qualifying_log(feature_hash)
+    if cached_result:
+        logging.info("Result is cached in prediction log, so returning that");
+        return cached_result, race_name, race_year, race
+
     model = retrieve_qualifying_model()
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -99,6 +117,11 @@ def predict(race_id):
     fastest_lap = min([item[1] for item in ranking])
     driver_ranking = [list(drivers_to_predict[position[0]]) + [round(position[1]-fastest_lap, 3)] for position in ranking]
 
+    # Add to the log table
+    ts = time.time()
+    timestamp = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    for index, driver in enumerate(driver_ranking):
+        db.insert_qualifying_log(driver[0], (index + 1), feature_hash, timestamp, driver[-1]) 
     return driver_ranking, race_name, race_year, race
 
 
