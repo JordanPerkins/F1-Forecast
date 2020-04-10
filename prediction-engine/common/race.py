@@ -42,16 +42,19 @@ def results_to_ranking(predictions, number_of_drivers):
     return sorted_ranking
 
 def generate_feature_hash(race_name, qualifying_deltas, qualifying_grid):
-    qualifying_deltas_as_string = (',').join([str(delta) for delta in qualifying_deltas])
-    qualifying_grid = (',').join([str(position) for position in qualifying_grid])
-    hash_string = race_name + qualifying_deltas_as_string + qualifying_grid
+    strings = [
+        race_name,
+        (',').join([str(delta) for delta in qualifying_deltas]),
+        (',').join([str(position) for position in qualifying_grid])
+    ]
+    hash_string = '|'.join(strings)
     hash_result = hashlib.sha256(hash_string.encode()).hexdigest()
-    return hash_result
+    return hash_result, hash_string
 
 def predict(race_id):
     race = race_id
     if race is None:
-        race = db.get_next_race_id()
+        race = db.get_next_race_year_round()[2]
 
     logging.info("Making prediction for race with ID "+str(race))
 
@@ -75,7 +78,7 @@ def predict(race_id):
         'grid': np.array(qualifying_grid)
     }
 
-    feature_hash = generate_feature_hash(race_name, qualifying_deltas, qualifying_grid)
+    feature_hash, feature_string = generate_feature_hash(race_name, qualifying_deltas, qualifying_grid)
 
     cached_result = db.get_race_log(feature_hash)
     if cached_result:
@@ -98,6 +101,6 @@ def predict(race_id):
     ts = time.time()
     timestamp = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     for index, driver in enumerate(driver_ranking):
-        db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp) 
+        db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string) 
 
     return driver_ranking, race_name, race_year, race
