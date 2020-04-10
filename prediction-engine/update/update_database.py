@@ -80,6 +80,45 @@ def insert_results(race_id, results):
             total_inserted += 1
     return total_inserted
 
+def insert_driver_standings(race_id, results):
+    drivers = tuples_to_dictionary(db.get_driver_references())
+    total_inserted = 0
+    for result in results:
+        driver_id = (drivers[result['Driver']['driverId']][0][0]
+            if result['Driver']['driverId'] in drivers 
+            else insert_driver(result['Driver']))
+
+        inserted = db.insert_driver_standing(
+            race_id,
+            driver_id,
+            result['points'],
+            result['position'],
+            result['positionText'],
+            result['wins']
+        )
+        if inserted == 1:
+            total_inserted += 1
+    return total_inserted
+
+def insert_constructor_standings(race_id, results):
+    constructors = tuples_to_dictionary(db.get_constructor_references())
+    total_inserted = 0
+    for result in results:
+        constructor_id = (drivers[result['Constructor']['constructorId']][0][0]
+            if result['Constructor']['constructorId'] in constructors
+            else insert_constructor(result['Constructor']))
+
+        inserted = db.insert_driver_standing(
+            race_id,
+            constructor_id,
+            result['points'],
+            result['position'],
+            result['positionText'],
+            result['wins']
+        )
+        if inserted == 1:
+            total_inserted += 1
+    return total_inserted
 
 def lap_to_seconds(lap):
     parts = lap.split(':')
@@ -151,8 +190,8 @@ def check_for_races():
     if 'MRData' in json:
         data = json['MRData']
         if int(data['total']) > 0 and 'RaceTable' in data and 'Races' in data['RaceTable'] and len(data['RaceTable']['Races']) > 0:
-            if 'Results' in data['RaceTable']['Races'] and len(data['RaceTable']['Races']['Results']) > 0:
-                results = data['RaceTable']['Races']['Results']
+            if 'Results' in data['RaceTable']['Races'][0] and len(data['RaceTable']['Races'][0]['Results']) > 0:
+                results = data['RaceTable']['Races'][0]['Results']
                 return insert_results(race_id, results)
     return 0
 
@@ -164,8 +203,8 @@ def check_for_qualifying():
     if 'MRData' in json:
         data = json['MRData']
         if int(data['total']) > 0 and 'RaceTable' in data and 'Races' in data['RaceTable'] and len(data['RaceTable']['Races']) > 0:
-            if 'QualifyingResults' in data['RaceTable']['Races'] and len(data['RaceTable']['Races']['QualifyingResults']) > 0:
-                results = data['RaceTable']['Races']['QualifyingResults']
+            if 'QualifyingResults' in data['RaceTable']['Races'][0] and len(data['RaceTable']['Races'][0]['QualifyingResults']) > 0:
+                results = data['RaceTable']['Races'][0]['QualifyingResults']
                 return insert_qualifying_results(race_id, results)
     return 0
 
@@ -180,6 +219,31 @@ def check_for_calendar_updates():
             return insert_calendar_updates(results)
     return 0
 
+def check_for_drivers_standings():
+    year, race_round, race_id, date = db.get_next_race_year_round_driver_standings()
+    print(date)
+    request = requests.get(ERGAST_API_URL+str(year)+'/'+str(race_round)+'/driverStandings.json')
+    json = request.json()
+    if 'MRData' in json:
+        data = json['MRData']
+        if int(data['total']) > 0 and 'StandingsTable' in data and 'StandingsLists' in data['StandingsTable'] and len(data['StandingsTable']['StandingsLists']) > 0:
+            if 'DriverStandings' in data['StandingsTable']['StandingsLists'][0] and len(data['StandingsTable']['StandingsLists'][0]['DriverStandings']) > 0:
+                results = data['StandingsTable']['StandingsLists'][0]['DriverStandings']
+                return insert_driver_standings(race_id, results)
+    return 0
+
+def check_for_constructor_standings():
+    year, race_round, race_id, date = db.get_next_race_year_round_constructor_standings()
+    print(date)
+    request = requests.get(ERGAST_API_URL+str(year)+'/'+str(race_round)+'/constructorStandings.json')
+    json = request.json()
+    if 'MRData' in json:
+        data = json['MRData']
+        if int(data['total']) > 0 and 'StandingsTable' in data and 'StandingsLists' in data['StandingsTable'] and len(data['StandingsTable']['StandingsLists']) > 0:
+            if 'ConstructorStandings' in data['StandingsTable']['StandingsLists'][0] and len(data['StandingsTable']['StandingsLists'][0]['ConstructorStandings']) > 0:
+                results = data['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
+                return insert_constructor_standings(race_id, results)
+    return 0
 
 def check_for_database_updates():
     calendar = check_for_calendar_updates()
@@ -188,3 +252,7 @@ def check_for_database_updates():
     logging.info("Added "+str(races)+" race records")
     qualifying = check_for_qualifying()
     logging.info("Added "+str(qualifying)+" qualifying records")
+    drivers_standings = check_for_drivers_standings()
+    logging.info("Added "+str(drivers_standings)+" driver standings records")
+    constructor_standings = check_for_constructor_standings()
+    logging.info("Added "+str(constructor_standings)+" constructor standings records")

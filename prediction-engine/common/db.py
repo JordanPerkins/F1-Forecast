@@ -100,11 +100,11 @@ class Database:
         return cursor.fetchall()
 
     def get_next_race_year_round(self):
-        cursor = self.query("SELECT races.year, races.round, races.raceId, races.date FROM results INNER JOIN races ON results.raceId+1=races.raceId ORDER by results.raceId DESC LIMIT 1;")
+        cursor = self.query("SELECT races.year, races.round, races.raceId, races.date FROM results INNER JOIN races ON results.raceId<races.raceId ORDER by results.raceId DESC LIMIT 1;")
         return cursor.fetchone()
 
     def get_next_race_year_round_qualifying(self):
-        cursor = self.query("SELECT races.year, races.round, races.raceId, races.date FROM qualifying INNER JOIN races ON qualifying.raceId+1=races.raceId ORDER by qualifying.raceId DESC LIMIT 1;")
+        cursor = self.query("SELECT races.year, races.round, races.raceId, races.date FROM qualifying INNER JOIN races ON qualifying.raceId<races.raceId ORDER by qualifying.raceId DESC LIMIT 1;")
         return cursor.fetchone()
 
     def get_driver_references(self):
@@ -248,3 +248,25 @@ class Database:
     def get_qualifying_log(self, featureHash):
         cursor = self.query("SELECT drivers.*, delta FROM qualifyingPredictionLog INNER JOIN drivers ON drivers.driverId=qualifyingPredictionLog.driverId WHERE featureHash = %s AND time >= (NOW() - INTERVAL 2 WEEK) ORDER BY position ASC;", (featureHash,))
         return cursor.fetchall()
+
+    def get_next_race_year_round_driver_standings(self):
+        cursor = self.query("SELECT races.year, races.round, races.raceId, races.date FROM driverStandings INNER JOIN races ON driverStandings.raceId<races.raceId ORDER by driverStandings.raceId DESC LIMIT 1;")
+        return cursor.fetchone()
+
+    def insert_driver_standing(self, raceId, driverId, points, position, positionText, wins):
+        cursor = self.query("INSERT INTO driverStandings (raceId, driverId, points, position, positionText, wins) VALUES (%s, %s, %s, %s, %s, %s);",
+            (raceId, driverId, points, poisition, positionText, wins)
+        )
+        self.db.commit()
+        return cursor.rowcount
+
+    def get_next_race_year_round_constructor_standings(self):
+        cursor = self.query("SELECT races.year, races.round, races.raceId, races.date FROM constructorStandings INNER JOIN races ON constructorStandings.raceId<races.raceId ORDER by constructorStandings.raceId DESC LIMIT 1;")
+        return cursor.fetchone()
+
+    def insert_constructor_standing(self, race_id, constructor_id, points, position, positionText, wins):
+        cursor = self.query("INSERT INTO constructorStandings (raceId, constructorId, points, position, positionText, wins) VALUES (%s, %s, %s, %s, %s, %s);",
+            (race_id, constructor_id, points, poisition, positionText, wins)
+        )
+        self.db.commit()
+        return cursor.rowcount
