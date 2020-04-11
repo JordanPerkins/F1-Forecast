@@ -12,6 +12,7 @@ const NoIntentHandler = {
             && (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent');
   },
   handle(handlerInput) {
+    logger.info('NoIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastPosition = undefined;
     attributes.lastResult = undefined;
@@ -29,6 +30,7 @@ const YesIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.YesIntent';
   },
   async handle(handlerInput) {
+    logger.info('YesIntentHandler has been invoked');
     let speakOutput = '';
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     try {

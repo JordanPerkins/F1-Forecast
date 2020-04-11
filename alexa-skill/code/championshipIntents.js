@@ -17,6 +17,7 @@ const ChampionshipLeaderIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ChampionshipLeaderIntent';
   },
   async handle(handlerInput) {
+    logger.info('ChampionshipLeaderIntentHandler has been invoked');
     let speakOutput;
     try {
       const [driversResult, constructorsResult] = await Promise.all([
@@ -59,6 +60,7 @@ const ChampionshipDriverIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ChampionshipDriverIntent';
   },
   async handle(handlerInput) {
+    logger.info('ChampionshipDriverIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getDriversChampionship();
@@ -89,6 +91,7 @@ const ChampionshipConstructorIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ChampionshipConstructorIntent';
   },
   async handle(handlerInput) {
+    logger.info('ChampionshipConstructorIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getConstructorsChampionship();
@@ -117,6 +120,7 @@ const FullChampionshipDriverIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'FullChampionshipDriverIntent';
   },
   async handle(handlerInput) {
+    logger.info('FullChampionshipDriverIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;
@@ -160,6 +164,7 @@ const FullChampionshipConstructorsIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'FullChampionshipConstructorsIntent';
   },
   async handle(handlerInput) {
+    logger.info('FullChampionshipConstructorsIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;
@@ -203,6 +208,7 @@ const WorldChampionIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'WorldChampionIntent';
   },
   async handle(handlerInput) {
+    logger.info('WorldChampionIntentHandler has been invoked');
     let speakOutput;
     try {
       const year = validateYear(handlerInput);

@@ -1,11 +1,14 @@
 
 const Alexa = require('ask-sdk-core');
 
+const logger = require('./logger.js');
+
 const LaunchRequestHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
   },
   handle(handlerInput) {
+    logger.info('LaunchRequestHandler has been invoked');
     const speakOutput = 'Welcome to F1 forecast. You can ask me a question such as who do you think will win the \
     next grand prix or who was the last pole-sitter. For detailed information on the full capabilities of this \
     application, just ask for help. What would you like me to do?';
@@ -22,6 +25,7 @@ const HelpIntentHandler = {
             && (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent');
   },
   handle(handlerInput) {
+    logger.info('HelpIntentHandler has been invoked');
     const speakOutput = 'F1 forecast can provide predictions for the upcoming qualifying and race sessions. \
     Just ask me who will win, where will Lewis Hamilton qualify or even get a prediction for the entire grid by \
     asking me for the forecast. The application can tell you about the upcoming race calendar, just ask me what the \
@@ -44,6 +48,7 @@ const CancelAndStopIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
   },
   handle(handlerInput) {
+    logger.info('CancelAndStopIntentHandler has been invoked');
     const speakOutput = 'Goodbye!';
     return handlerInput.responseBuilder
       .speak(speakOutput)
@@ -56,6 +61,7 @@ const SessionEndedRequestHandler = {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest';
   },
   handle(handlerInput) {
+    logger.info('SessionEndedRequestHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastPosition = undefined;
     attributes.lastResult = undefined;
@@ -70,6 +76,7 @@ const FallbackIntentHandler = {
             && (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent');
   },
   handle(handlerInput) {
+    logger.info('FallbackIntentHandler has been invoked');
     const speakOutput = 'I\'m sorry, I didn\'t get that. If you want to learn more about F1 forecast, just ask \
     me for help. What would you like to do?';
 

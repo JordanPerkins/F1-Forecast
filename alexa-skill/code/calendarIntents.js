@@ -13,6 +13,7 @@ const GetNextRaceIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetNextRaceIntent';
   },
   async handle(handlerInput) {
+    logger.info('GetNextRaceIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getCalendar();
@@ -37,6 +38,7 @@ const GetFullCalendarIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetFullCalendarIntent';
   },
   async handle(handlerInput) {
+    logger.info('GetFullCalendarIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;
@@ -80,6 +82,7 @@ const CalendarRaceIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CalendarRaceIntent';
   },
   async handle(handlerInput) {
+    logger.info('CalendarRaceIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getCalendar();

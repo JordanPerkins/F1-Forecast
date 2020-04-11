@@ -14,6 +14,7 @@ const LastWinnerIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'LastWinnerIntent';
   },
   async handle(handlerInput) {
+    logger.info('LastWinnerIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getLastResult();
@@ -38,6 +39,7 @@ const LastPoleIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'LastPoleIntent';
   },
   async handle(handlerInput) {
+    logger.info('LastPoleIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getLastQualifyingResult();
@@ -62,6 +64,7 @@ const LastRacePositionIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'LastRacePositionIntent';
   },
   async handle(handlerInput) {
+    logger.info('LastRacePositionIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getLastResult();
@@ -91,6 +94,7 @@ const LastQualifyingPositionIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'QualifyingPositionIntent';
   },
   async handle(handlerInput) {
+    logger.info('LastQualifyingPositionIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getLastQualifyingResult();
@@ -121,6 +125,7 @@ const GetFullRaceResultIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetFullRaceResultIntent';
   },
   async handle(handlerInput) {
+    logger.info('GetFullRaceResultIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;
@@ -163,6 +168,7 @@ const GetFullQualifyingResultIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetFullQualifyingResultIntent';
   },
   async handle(handlerInput) {
+    logger.info('GetFullQualifyingResultIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;

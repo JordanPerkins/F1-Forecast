@@ -12,6 +12,7 @@ const PredictWinnerIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictWinnerIntent';
   },
   async handle(handlerInput) {
+    logger.info('PredictWinnerIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getRacePrediction();
@@ -33,6 +34,7 @@ const PredictQualifyingIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictQualifyingIntent';
   },
   async handle(handlerInput) {
+    logger.info('PredictQualifyingIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getQualifyingPrediction();
@@ -55,6 +57,7 @@ const PredictRacePositionIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictRacePositionIntent';
   },
   async handle(handlerInput) {
+    logger.info('PredictRacePositionIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getRacePrediction();
@@ -84,6 +87,7 @@ const PredictQualifyingPositionIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PredictQualifyingPositionIntent';
   },
   async handle(handlerInput) {
+    logger.info('PredictQualifyingPositionIntentHandler has been invoked');
     let speakOutput;
     try {
       const result = await getQualifyingPrediction();
@@ -116,6 +120,7 @@ const ReadRaceForecastIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ReadRaceForecastIntent';
   },
   async handle(handlerInput) {
+    logger.info('ReadRaceForecastIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;
@@ -158,6 +163,7 @@ const ReadQualifyingForecastIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ReadQualifyingForecastIntent';
   },
   async handle(handlerInput) {
+    logger.info('ReadQualifyingForecastIntentHandler has been invoked');
     const attributes = handlerInput.attributesManager.getSessionAttributes();
     attributes.lastIntent = Alexa.getIntentName(handlerInput.requestEnvelope);
     let speakOutput;
