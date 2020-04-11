@@ -6,6 +6,10 @@ const { formatRaceDate } = require('./util.js');
 const logger = require('./logger.js');
 const config = require('./config.js')();
 
+/**
+ * Generic No Intent handler, which does nothing other than confirm
+ * to the user that it is stopping.
+ */
 const NoIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -24,6 +28,10 @@ const NoIntentHandler = {
   },
 };
 
+/**
+ * Generic Yes Intent handler, which uses the information provided in the attributes
+ * to determine what it should return to the user.
+ */
 const YesIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'

@@ -8,6 +8,10 @@ const logger = require('./logger.js');
 
 const config = require('./config.js')();
 
+/**
+ * The intent which handles getting the winner of the last grand prix, by calling
+ * the backend for the last result, and taking the top (winning) result.
+ */
 const LastWinnerIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -33,6 +37,10 @@ const LastWinnerIntentHandler = {
   },
 };
 
+/**
+ * The intent which handles getting the polesitter of the last grand prix, by calling
+ * the backend for the last result, and taking the top (winning) result.
+ */
 const LastPoleIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -58,6 +66,12 @@ const LastPoleIntentHandler = {
   },
 };
 
+
+/**
+ * The intent which retrieves the last race position of the driver specified in the slot.
+ * It calls the backend for the result, and then uses a Levenshtein based search to
+ * find a result if there is one.
+ */
 const LastRacePositionIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -88,6 +102,11 @@ const LastRacePositionIntentHandler = {
   },
 };
 
+/**
+ * The intent which retrieves the last qualifying position of the driver specified in the slot.
+ * It calls the backend for the result, and then uses a Levenshtein based search to
+ * find a result if there is one.
+ */
 const LastQualifyingPositionIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -119,6 +138,12 @@ const LastQualifyingPositionIntentHandler = {
   },
 };
 
+/**
+ * The intent handler for returning the full result of the last race. It calls
+ * the backend forthe full result, and then speaks it out one by one, saving
+ * the result in the attributes to allow prompting for continuation using
+ * the YesIntent.
+ */
 const GetFullRaceResultIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -162,6 +187,12 @@ const GetFullRaceResultIntentHandler = {
   },
 };
 
+/**
+ * The intent handler for returning the full qualifying result of the last race. It calls
+ * the backend forthe full result, and then speaks it out one by one, saving
+ * the result in the attributes to allow prompting for continuation using
+ * the YesIntent.
+ */
 const GetFullQualifyingResultIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'

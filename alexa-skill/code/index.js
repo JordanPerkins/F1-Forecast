@@ -8,9 +8,11 @@ const resultIntents = require('./resultIntents.js');
 
 const logger = require('./logger.js');
 
-// Generic error handling to capture any syntax or routing errors. If you receive an error
-// stating the request handler chain is not found, you have not implemented a handler for
-// the intent being invoked or included it in the skill builder below.
+/**
+ * The last resort error handler - generally all intents handle their own errors
+ * internally, but in the unlikely event there is a problem which isn't caught
+ * within, this error handler will still provide a response to the user.
+ */
 const ErrorHandler = {
   canHandle() {
     return true;
@@ -26,10 +28,12 @@ const ErrorHandler = {
   },
 };
 
-// The intent reflector is used for interaction model testing and debugging.
-// It will simply repeat the intent the user said. You can create custom handlers
-// for your intents by defining them above, then also adding them to the request
-// handler chain below.
+/**
+ * A generic intent that can be used for debugging - if an intent match is found
+ * in the model, but no intent handler has been specified, this handler will be
+ * triggered to return the triggered intent name to the user. It must always
+ * place last in the request handlers list.
+ */
 const IntentReflectorHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest';
@@ -45,9 +49,11 @@ const IntentReflectorHandler = {
   },
 };
 
-// The SkillBuilder acts as the entry point for your skill, routing all request and response
-// payloads to the handlers above. Make sure any new handlers or interceptors you've
-// defined are included below. The order matters - they're processed top to bottom.
+/**
+ * The Skill Handler provided by the Alexa SDK. Overlapping intents are processed
+ * top first. Here, the arrays of all included files are spread into the addRequestHandlers
+ * function as arguments, as the Alexa SDK requires.
+ */
 exports.handler = Alexa.SkillBuilders.custom()
   .addRequestHandlers(
     ...predictionIntents,

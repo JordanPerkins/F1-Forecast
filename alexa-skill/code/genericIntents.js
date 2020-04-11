@@ -3,6 +3,10 @@ const Alexa = require('ask-sdk-core');
 
 const logger = require('./logger.js');
 
+/**
+ * The intent for handling a new session launch. It returns information which
+ * can help the user navigate the application.
+ */
 const LaunchRequestHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
@@ -19,6 +23,10 @@ const LaunchRequestHandler = {
   },
 };
 
+/**
+ * The intent for handling a request for help. It returns a comprehensive summary
+ * of the actions available in the application.
+ */
 const HelpIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -41,6 +49,9 @@ const HelpIntentHandler = {
   },
 };
 
+/**
+ * The intent for handling stopping or cancelling the session.
+ */
 const CancelAndStopIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -56,6 +67,9 @@ const CancelAndStopIntentHandler = {
   },
 };
 
+/**
+ * The intent for handling ending the session.
+ */
 const SessionEndedRequestHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest';
@@ -70,6 +84,10 @@ const SessionEndedRequestHandler = {
   },
 };
 
+/**
+ * The intent which is triggered when no other intent has been triggered, informing
+ * the user it did not understand the request, and providing guidance.
+ */
 const FallbackIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'

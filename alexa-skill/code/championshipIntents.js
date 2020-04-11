@@ -11,6 +11,10 @@ const {
 const logger = require('./logger.js');
 const config = require('./config.js')();
 
+/**
+ * The intent for retrieving the current championship leaders. It calls the backend in parallel
+ * for both results, and then returns the top (leading) result.
+ */
 const ChampionshipLeaderIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -54,6 +58,11 @@ const ChampionshipLeaderIntentHandler = {
   },
 };
 
+/**
+ * Intent for retrieving the championship position of the driver given in the slot value.
+ * It calls the backend for the driver's championship, and then searches based on a
+ * Levenshtein distance.
+ */
 const ChampionshipDriverIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -85,6 +94,11 @@ const ChampionshipDriverIntentHandler = {
   },
 };
 
+/**
+ * Intent for retrieving the championship position of the constructor given in the slot value.
+ * It calls the backend for the constructor's championship, and then searches based on a
+ * Levenhstein distance.
+ */
 const ChampionshipConstructorIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -114,6 +128,11 @@ const ChampionshipConstructorIntentHandler = {
   },
 };
 
+/**
+ * Intent for returning the full result's of the drivers championship. It gets the full
+ * result from the backend, and then speaks it one by one, saving the result as an attribute
+ * so we can prompt for continuation, handled by YesIntent.
+ */
 const FullChampionshipDriverIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -158,6 +177,11 @@ const FullChampionshipDriverIntentHandler = {
   },
 };
 
+/**
+ * Intent for returning the full result's of the constructors championship. It gets the full
+ * result from the backend, and then speaks it one by one, saving the result as an attribute
+ * so we can prompt for continuation, handled by YesIntent.
+ */
 const FullChampionshipConstructorsIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -202,6 +226,11 @@ const FullChampionshipConstructorsIntentHandler = {
   },
 };
 
+/**
+ * Intent for returning the world champion in a season given by the slot. It fetches the
+ * result from the backend, using the year as a parameter in the request URL and then
+ * speaks out the result.
+ */
 const WorldChampionIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'

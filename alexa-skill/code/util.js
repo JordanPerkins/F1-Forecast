@@ -6,6 +6,10 @@ const config = require('./config.js')();
 
 const logger = require('./logger.js');
 
+/**
+ * Fetches latest race prediction
+ * @returns {Promise<Object>} The result from the race prediction endpoint
+ */
 module.exports.getRacePrediction = async () => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled predictions');
@@ -24,6 +28,10 @@ module.exports.getRacePrediction = async () => {
   return result;
 };
 
+/**
+ * Fetches latest qualifying prediction
+ * @returns {Promise<Object>} The result from the qualifying prediction endpoint
+ */
 module.exports.getQualifyingPrediction = async () => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled predictions');
@@ -42,6 +50,10 @@ module.exports.getQualifyingPrediction = async () => {
   return result;
 };
 
+/**
+ * Fetches latest race calendar
+ * @returns {Promise<Object>} The result from the calendar endpoint
+ */
 module.exports.getCalendar = async () => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled information');
@@ -60,6 +72,12 @@ module.exports.getCalendar = async () => {
   return result;
 };
 
+/**
+ * Searches results for given driver, using Levenshtein
+ * @param {Object} result - The array of driver results
+ * @param {Object} handlerInput - Amazon handler input object, with slots
+ * @returns {Object} The relevant driver object, otherwise null
+ */
 module.exports.searchForDriver = (result, handlerInput) => {
   if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request
         || !handlerInput.requestEnvelope.request.intent
@@ -118,6 +136,12 @@ module.exports.searchForDriver = (result, handlerInput) => {
   return null;
 };
 
+/**
+ * Searches results for given race, using Levenshtein
+ * @param {Object} result - The array of race results
+ * @param {Object} handlerInput - Amazon handler input object, with slots
+ * @returns {Object} The relevant race object, otherwise null
+ */
 module.exports.searchForRace = (result, handlerInput) => {
   if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request
         || !handlerInput.requestEnvelope.request.intent
@@ -163,6 +187,11 @@ module.exports.searchForRace = (result, handlerInput) => {
   return null;
 };
 
+/**
+ * Gets the next race in the result, using is_next_race flag
+ * @param {Object} result - The array of calendar results
+ * @returns {Object} The relevant calendar object
+ */
 module.exports.getNextRace = (result) => {
   if (!result.calendar || result.calendar.length === 0) {
     throw Error('Calendar was empty');
@@ -177,6 +206,11 @@ module.exports.getNextRace = (result) => {
   return filteredRaces[0];
 };
 
+/**
+ * Gets the remaining races by looking at next_race_round figure.
+ * @param {Object} result - The array of calendar results
+ * @returns {Object} The relevant calendar object
+ */
 module.exports.getRemainingRaces = (result) => {
   if (!result.calendar || result.calendar.length === 0) {
     throw Error('Calendar was empty');
@@ -191,6 +225,11 @@ module.exports.getRemainingRaces = (result) => {
   return filteredRaces;
 };
 
+/**
+ * Formats the date as required by Amazon SSML to read it outcorrectly.
+ * @param {String} date - Date string from result
+ * @returns {String} formatted date string
+ */
 module.exports.formatRaceDate = (date) => {
   const raceDate = new Date(date);
   const monthString = (raceDate.getMonth() + 1).toString().padStart(2, '0');
@@ -199,6 +238,10 @@ module.exports.formatRaceDate = (date) => {
   return formattedDate;
 };
 
+/**
+ * Fetches latest driver's championship
+ * @returns {Promise<Object>} The result from the championship endpoint
+ */
 module.exports.getDriversChampionship = async (year = null) => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled information');
@@ -217,6 +260,10 @@ module.exports.getDriversChampionship = async (year = null) => {
   return result;
 };
 
+/**
+ * Fetches latest constructor's championship
+ * @returns {Promise<Object>} The result from the championship endpoint
+ */
 module.exports.getConstructorsChampionship = async (year = null) => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled information');
@@ -235,6 +282,12 @@ module.exports.getConstructorsChampionship = async (year = null) => {
   return result;
 };
 
+/**
+ * Searches results for given constructor, using Levenshtein
+ * @param {Object} result - The array of championship results
+ * @param {Object} handlerInput - Amazon handler input object, with slots
+ * @returns {Object} The relevant constructor object, otherwise null
+ */
 module.exports.searchForConstructor = (result, handlerInput) => {
   if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request
         || !handlerInput.requestEnvelope.request.intent
@@ -271,6 +324,11 @@ module.exports.searchForConstructor = (result, handlerInput) => {
   return null;
 };
 
+/**
+ * Validates the year provided in the slot value
+ * @param {Object} handlerInput - Amazon handler input object, with slots
+ * @returns {Number} The retrieved year, otherwise null.
+ */
 module.exports.validateYear = (handlerInput) => {
   if (!handlerInput.requestEnvelope || !handlerInput.requestEnvelope.request
         || !handlerInput.requestEnvelope.request.intent
@@ -291,6 +349,10 @@ module.exports.validateYear = (handlerInput) => {
   return value;
 };
 
+/**
+ * Fetches last race result
+ * @returns {Promise<Object>} The result from the last result endpoint
+ */
 module.exports.getLastResult = async () => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled information');
@@ -309,6 +371,10 @@ module.exports.getLastResult = async () => {
   return result;
 };
 
+/**
+ * Fetches last qualifying result
+ * @returns {Promise<Object>} The result from the last qualifying result endpoint
+ */
 module.exports.getLastQualifyingResult = async () => {
   if (!config.predictionEndpoint) {
     throw Error('Prediction endpoint missing - disabled information');
@@ -327,6 +393,11 @@ module.exports.getLastQualifyingResult = async () => {
   return result;
 };
 
+/**
+ * Parses qualifying lap into a speakable string
+ * @param {Object} driver - Driver object
+ * @returns {String} Qualifying lap as a readable string
+ */
 module.exports.getQualifyingLap = (driver) => {
   let lap = null;
   if (driver.qualifying_q3) {

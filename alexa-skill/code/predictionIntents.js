@@ -6,6 +6,11 @@ const logger = require('./logger.js');
 
 const config = require('./config.js')();
 
+/**
+ * The intent for handling the prediction of the race winner. It calls the
+ * prediction endpoint on the backend, and takes the first result in the
+ * provided ranking, speaking it to the user.
+ */
 const PredictWinnerIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -28,6 +33,11 @@ const PredictWinnerIntentHandler = {
   },
 };
 
+/**
+ * The intent for handling the prediction of the qualifying polesitter. It calls the
+ * prediction endpoint on the backend, and takes the first result in the provided
+ * ranking, speaking it to the user.
+ */
 const PredictQualifyingIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -51,6 +61,11 @@ const PredictQualifyingIntentHandler = {
   },
 };
 
+/**
+ * The intent for returning the predicted position of the driver specified in the slot.
+ * It calls the prediction endpoint to get the full results, then uses a Levenshtein
+ * distance based search to try and find the specified driver.
+ */
 const PredictRacePositionIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -81,6 +96,11 @@ const PredictRacePositionIntentHandler = {
   },
 };
 
+/**
+ * The intent for returning the predicted qualifying position of the driver
+ * specified in the slot. It calls the prediction endpoint to get the full results,
+ * then uses a Levenshtein distance based search to try and find the specified driver.
+ */
 const PredictQualifyingPositionIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -114,6 +134,11 @@ const PredictQualifyingPositionIntentHandler = {
   },
 };
 
+/**
+ * Reads the full race prediction by retrieving it from the backend, and
+ * returning the results one by one, saving the result in the attributes to
+ * prompt for continuation which is handled by the YesIntent.
+ */
 const ReadRaceForecastIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -157,6 +182,11 @@ const ReadRaceForecastIntentHandler = {
   },
 };
 
+/**
+ * Reads the full qualifying prediction by retrieving it from the backend, and
+ * returning the results one by one, saving the result in the attributes to
+ * prompt for continuation which is handled by the YesIntent.
+ */
 const ReadQualifyingForecastIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'

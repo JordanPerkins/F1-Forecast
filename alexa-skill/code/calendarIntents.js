@@ -7,6 +7,11 @@ const {
 const logger = require('./logger.js');
 const config = require('./config.js')();
 
+/**
+ * The intent handler for retrieving the details of the next grand prix.
+ * It fetches the full calendar from the backend, and then gets the next
+ * race using the is_next_race flag inside the structure.
+ */
 const GetNextRaceIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -32,6 +37,11 @@ const GetNextRaceIntentHandler = {
   },
 };
 
+/**
+ * The intent handler for the full calendar. It gets it from the backend, and filters out
+ * races that have already happened, using the round number. It then speaks the results 
+ * one by one, using attributes to allow prompting for continuation.
+ */
 const GetFullCalendarIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -76,6 +86,11 @@ const GetFullCalendarIntentHandler = {
   },
 };
 
+/**
+ * The intent for searching for the race requested by the user as a Slot value.
+ * The full calendar is retrieved, and a function which searches based on
+ * Levenshtein distance is used to try and find a relevant result.
+ */
 const CalendarRaceIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
