@@ -55,24 +55,24 @@ const YesIntentHandler = {
              || lastIntent === 'ReadQualifyingForecastIntent'
              || lastIntent === 'GetFullRaceResultIntent'
              || lastIntent === 'GetFullQualifyingResultIntent') {
-            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-            <say-as interpret-as="ordinal">${i + 1}</say-as> ${lastResult[i].driver_forename} \
-            ${lastResult[i].driver_surname} </amazon:emotion>`;
+            speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+            `<say-as interpret-as="ordinal">${i + 1}</say-as> ${lastResult[i].driver_forename} ` +
+            `${lastResult[i].driver_surname} </amazon:emotion>`;
           } else if (lastIntent === 'GetFullCalendarIntent') {
             const formattedDate = formatRaceDate(lastResult[i].race_date);
-            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>Round \
-            ${lastResult[i].race_round}. The ${lastResult[i].race_name} on \
-            <say-as interpret-as="date">${formattedDate}</say-as> </amazon:emotion>`;
+            speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>Round ' +
+            `${lastResult[i].race_round}. The ${lastResult[i].race_name} on ` +
+            `<say-as interpret-as="date">${formattedDate}</say-as> </amazon:emotion>`;
           } else if (lastIntent === 'FullChampionshipDriverIntent') {
-            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-            <say-as interpret-as="ordinal">${i + 1}</say-as> ${lastResult[i].driver_forename} \
-            ${lastResult[i].driver_surname} with ${lastResult[i].driver_points} \
-            point${lastResult[i].driver_points === 1 ? '' : 's'}.</amazon:emotion>`;
+            speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+            `<say-as interpret-as="ordinal">${i + 1}</say-as> ${lastResult[i].driver_forename} ` +
+            `${lastResult[i].driver_surname} with ${lastResult[i].driver_points} ` +
+            `point${lastResult[i].driver_points === 1 ? '' : 's'}.</amazon:emotion>`;
           } else if (lastIntent === 'FullChampionshipConstructorsIntent') {
-            speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-            <say-as interpret-as="ordinal">${i + 1}</say-as> ${lastResult[i].constructor_name} with \
-            ${lastResult[i].constructor_points} \
-            point${lastResult[i].constructor_points === 1 ? '' : 's'}.</amazon:emotion>`;
+            speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+            `<say-as interpret-as="ordinal">${i + 1}</say-as> ${lastResult[i].constructor_name} with ` +
+            `${lastResult[i].constructor_points} ` +
+            `point${lastResult[i].constructor_points === 1 ? '' : 's'}.</amazon:emotion>`;
           }
         }
       }

@@ -24,9 +24,9 @@ const GetNextRaceIntentHandler = {
       const result = await getCalendar();
       const nextRace = getNextRace(result.data);
       const formattedDate = formatRaceDate(nextRace.race_date);
-      speakOutput = `The next Grand Prix, which is the <say-as interpret-as="ordinal">${nextRace.race_round}</say-as> \
-      round of the championship, is the ${nextRace.race_name} at the ${nextRace.circuit_name} on \
-      <say-as interpret-as="date">${formattedDate}</say-as>, starting at ${nextRace.race_time} GMT.`;
+      speakOutput = `The next Grand Prix, which is the <say-as interpret-as="ordinal">${nextRace.race_round}</say-as> ` +
+      `round of the championship, is the ${nextRace.race_name} at the ${nextRace.circuit_name} on ` +
+      `<say-as interpret-as="date">${formattedDate}</say-as>, starting at ${nextRace.race_time} GMT.`;
     } catch (e) {
       logger.error(`Error fetching result for GetNextRaceIntentHandler: ${e}`);
       speakOutput = 'I was unable to get the race calendar at this time. Please check back later';
@@ -59,9 +59,9 @@ const GetFullCalendarIntentHandler = {
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < filteredRaces.length) {
           const formattedDate = formatRaceDate(filteredRaces[i].race_date);
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>Round \
-          ${filteredRaces[i].race_round}. The ${filteredRaces[i].race_name} on\
-          <say-as interpret-as="date">${formattedDate}</say-as> </amazon:emotion>`;
+          speakOutput += ('<amazon:emotion name="excited" intensity="medium"><break time="1s"/>Round ' +
+          `${filteredRaces[i].race_round}. The ${filteredRaces[i].race_name} on ` +
+          `<say-as interpret-as="date">${formattedDate}</say-as> </amazon:emotion>`);
         }
       }
       if (config.listMax < filteredRaces.length) {
@@ -103,19 +103,19 @@ const CalendarRaceIntentHandler = {
       const result = await getCalendar();
       const searchedRace = searchForRace(result.data.calendar, handlerInput);
       if (!searchedRace) {
-        speakOutput = 'I coud not find the race you requested. You can use the race name, \
-        circuit name, circuit location or circuit country.';
+        speakOutput = 'I could not find the race you requested. You can use the race name, ' +
+        'circuit name, circuit location or circuit country.';
       } else {
         const formattedDate = formatRaceDate(searchedRace.race_date);
         if (searchedRace.race_round < result.data.next_race_round) {
-          speakOutput = `The ${searchedRace.race_name}, which was the \
-          <say-as interpret-as="ordinal">${searchedRace.race_round}</say-as> round of the championship, took \
-          place at ${searchedRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>`;
+          speakOutput = `The ${searchedRace.race_name}, which was the ` +
+          `<say-as interpret-as="ordinal">${searchedRace.race_round}</say-as> round of the championship, took ` +
+          `place at ${searchedRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>`;
         } else {
-          speakOutput = `The ${searchedRace.race_name}, which is the \
-          <say-as interpret-as="ordinal">${searchedRace.race_round}</say-as> round of the championship, will \
-          take place at ${searchedRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>, \
-          starting at ${searchedRace.race_time} GMT.`;
+          speakOutput = `The ${searchedRace.race_name}, which is the ` +
+          `<say-as interpret-as="ordinal">${searchedRace.race_round}</say-as> round of the championship, will ` +
+          `take place at ${searchedRace.circuit_name} on <say-as interpret-as="date">${formattedDate}</say-as>, ` +
+          `starting at ${searchedRace.race_time} GMT.`;
         }
       }
     } catch (e) {

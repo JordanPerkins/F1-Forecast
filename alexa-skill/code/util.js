@@ -156,7 +156,7 @@ module.exports.searchForRace = (result, handlerInput) => {
   logger.info(`Received slot value of ${value}`);
 
   if (!result || result.length === 0) {
-    return null;
+    throw Error('Result was empty');
   }
 
   const races = result.map((race) => {
