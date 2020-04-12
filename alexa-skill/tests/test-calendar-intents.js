@@ -1,24 +1,20 @@
 const alexaTest = require('alexa-skill-test-framework');
 const nock = require('nock');
 
-const data = require('./data/calender-data.json');
+const data = require('./data/calendar-data.json');
+
+let lastInterceptor;
 
 const setGoodResponse = () => {
-    nock('https://prediction-endpoint')
-    .get('/info/calendar')
-    .reply(200, data);
-};
+    lastInterceptor = nock('https://prediction-endpoint').get('/info/calendar').reply(200, data);
+}
 
 const set500Response = () => {
-    nock('https://prediction-endpoint')
-    .get('/info/calendar')
-    .reply(500, 'Internal Server Error');
-};
+    lastInterceptor = nock('https://prediction-endpoint').get('/info/calendar') .reply(500, 'Internal Server Error');
+}
 
 const setEmptyResponse = () => {
-    nock('https://prediction-endpoint')
-    .get('/info/calendar')
-    .reply(200, {
+    lastInterceptor = nock('https://prediction-endpoint').get('/info/calendar').reply(200, {
         calendar: [],
         next_race_id: null,
         next_race_round: null,
