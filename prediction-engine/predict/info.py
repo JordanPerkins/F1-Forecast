@@ -1,22 +1,24 @@
 
-import json
-from flask import abort, jsonify
-from ..common.db import Database
+""" The controllers for the information routes. """
+
 import logging
 import traceback
+from flask import abort, jsonify
+from ..common.db import Database
 
 db = Database.get_database()
 
-def calendar(year=None):
+def season_calendar(year=None):
+    """ Fetches the calendar of the specified year, or current season. """
     try:
         season_year = year
         race_round = None
-        date = None,
+        date = None
         race_id = None
         if season_year is None:
             season_year, race_round, race_id, date = db.get_next_race_year_round()
 
-        logging.info("Fetching calendar for year "+str(season_year))
+        logging.info("Fetching calendar for year %s", str(season_year))
 
         calendar = db.get_calendar(season_year)
 
@@ -34,7 +36,7 @@ def calendar(year=None):
                 'circuit_country': race[7],
                 'is_next_race': is_next_race
             })
-        
+
         return jsonify({
             'year': season_year,
             'next_race_round': race_round,
@@ -42,20 +44,22 @@ def calendar(year=None):
             'next_race_date': date,
             'calendar' : result
         })
-    except Exception as e:
-        logging.error('An error occurred fetching race calendar: '+str(e))
+    except Exception as err:
+        logging.error('An error occurred fetching race calendar: %s', str(err))
         logging.debug(traceback.format_exc())
         abort(500, description="Internal Server Error")
 
 
 def drivers_championship(year=None):
+    """ Fetches the final driver's championship of the specified year,
+        or the current standings. """
     try:
         if year is None:
             race_id = db.get_last_race_id()
         else:
             race_id = db.get_last_race_id_in_year(year)
 
-        logging.info("Fetching drivers standings for race_id "+str(race_id))
+        logging.info("Fetching drivers standings for race_id %s", str(race_id))
 
         result = []
 
@@ -82,27 +86,29 @@ def drivers_championship(year=None):
                     'driver_wins': driver[10],
                     'driver_position': driver[11],
                 })
-        
+
         return jsonify({
             'last_race_id': race_id,
             'last_race_name': race_name,
             'last_race_year': race_year,
             'standings' : result
         })
-    except Exception as e:
-        logging.error('An error occurred fetching drivers standings: '+str(e))
+    except Exception as err:
+        logging.error('An error occurred fetching drivers standings: %s', str(err))
         logging.debug(traceback.format_exc())
         abort(500, description="Internal Server Error")
 
 
 def constructors_championship(year=None):
+    """ Fetches the final constructors's championship of the
+        specified year, or the current standings. """
     try:
         if year is None:
             race_id = db.get_last_race_id()
         else:
             race_id = db.get_last_race_id_in_year(year)
 
-        logging.info("Fetching drivers standings for race_id "+str(race_id))
+        logging.info("Fetching drivers standings for race_id %s", str(race_id))
 
         result = []
 
@@ -125,24 +131,28 @@ def constructors_championship(year=None):
                     'constructor_wins': constructor[6],
                     'constructor_position': constructor[7]
                 })
-        
+
         return jsonify({
             'last_race_id': race_id,
             'last_race_name': race_name,
             'last_race_year': race_year,
             'standings' : result
         })
-    except Exception as e:
-        logging.error('An error occurred fetching constructors standings: '+str(e))
+    except Exception as err:
+        logging.error('An error occurred fetching constructors standings: %s', str(err))
         logging.debug(traceback.format_exc())
         abort(500, description="Internal Server Error")
 
 
-def race_results():
+def race_results(race=None):
+    """ Fetches the results of the last or specified race. """
     try:
-        race_id = db.get_last_race_id()
+        if race:
+            race_id = race
+        else:
+            race_id = db.get_last_race_id()
 
-        logging.info("Fetching results for race_id "+str(race_id))
+        logging.info("Fetching results for race_id %s", str(race_id))
 
         race_name, race_year = db.get_race_by_id(race_id)
 
@@ -165,23 +175,27 @@ def race_results():
                 'race_points': race_result[11],
                 'race_laps': race_result[12]
             })
-        
+
         return jsonify({
             'last_race_id': race_id,
             'last_race_name': race_name,
             'last_race_year': race_year,
             'results' : result
         })
-    except Exception as e:
-        logging.error('An error occurred fetching last race results: '+str(e))
+    except Exception as err:
+        logging.error('An error occurred fetching last race results: %s', str(err))
         logging.debug(traceback.format_exc())
         abort(500, description="Internal Server Error")
 
-def qualifying_results():
+def qualifying_results(race=None):
+    """ Fetches the results of qualifying in the last or specified race. """
     try:
-        race_id = db.get_last_qualifying_race_id()
+        if race:
+            race_id = race
+        else:
+            race_id = db.get_last_qualifying_race_id()
 
-        logging.info("Fetching qualifying results for race_id "+str(race_id))
+        logging.info("Fetching qualifying results for race_id %s", str(race_id))
 
         race_name, race_year = db.get_race_by_id(race_id)
 
@@ -204,14 +218,14 @@ def qualifying_results():
                 'qualifying_q2': qualifying_result[11],
                 'qualifying_q3': qualifying_result[12]
             })
-        
+
         return jsonify({
             'last_race_id': race_id,
             'last_race_name': race_name,
             'last_race_year': race_year,
             'results' : result
         })
-    except Exception as e:
-        logging.error('An error occurred fetching last qualifying results: '+str(e))
+    except Exception as err:
+        logging.error('An error occurred fetching last qualifying results: %s', str(err))
         logging.debug(traceback.format_exc())
         abort(500, description="Internal Server Error")

@@ -1,26 +1,28 @@
-import json
-import tensorflow as tf
-import numpy as np
-from .models import retrieve_race_model
-import logging
-import traceback
-from .db import Database
-from .utils import replace_none_with_average
-from .qualifying import predict as qualifying_predict
+""" Module which is responsible for making race predictions. """
+
 import time
 import datetime
 import hashlib
+import logging
+import tensorflow as tf
+import numpy as np
+from .models import retrieve_race_model
+from .db import Database
+from .utils import replace_none_with_average
+from .qualifying import predict as qualifying_predict
 
 db = Database.get_database()
 
 def get_result_as_tuples(predictions, number_of_drivers):
+    """ Converts TensorFlow result into a list of tuples that can be sorted,
+        also normalising probability by position. """
     by_position = {}
     for pred_dict in predictions:
         for position in range(0, number_of_drivers):
             if position not in by_position:
                 by_position[position] = []
             by_position[position].append(pred_dict['probabilities'][position].item())
-    
+
     result = []
     for position, values in by_position.items():
         total = sum(values)
@@ -28,6 +30,8 @@ def get_result_as_tuples(predictions, number_of_drivers):
     return result
 
 def results_to_ranking(predictions, number_of_drivers):
+    """ Converts the tuples into a final ranking, by repeatedly
+        picking highest class probability. """
     ranked_drivers = []
     ranked_positions = []
     ranking = []
@@ -42,6 +46,7 @@ def results_to_ranking(predictions, number_of_drivers):
     return sorted_ranking
 
 def generate_feature_hash(race_name, qualifying_deltas, qualifying_grid):
+    """ Generate a unique hash of the features. """
     strings = [
         race_name,
         (',').join([str(delta) for delta in qualifying_deltas]),
@@ -52,21 +57,22 @@ def generate_feature_hash(race_name, qualifying_deltas, qualifying_grid):
     return hash_result, hash_string
 
 def predict(race_id):
+    """ Obtain a prediction for the given (or next) race. """
     race = race_id
     if race is None:
         race = db.get_next_race_year_round()[2]
 
-    logging.info("Making prediction for race with ID "+str(race))
+    logging.info("Making prediction for race with ID %s", str(race))
 
     qualifying_results = db.get_qualifying_results_with_driver(race)
     if len(qualifying_results) > 0:
-        logging.info("Qualifying results exist for race with ID "+str(race))
+        logging.info("Qualifying results exist for race with ID %s", str(race))
         drivers_to_predict = [list(result)[:len(result) - 2] for result in qualifying_results]
         qualifying_grid = [int(list(result)[len(result) - 2]) for result in qualifying_results]
         qualifying_deltas = replace_none_with_average([list(result)[len(result) - 1] for result in qualifying_results])
         race_name, race_year = db.get_race_by_id(race)
     else:
-        logging.info("Qualifying results not available for race with ID "+str(race)+", so will make prediction")
+        logging.info("Qualifying results not available for race with ID %s, so will make prediction", str(race))
         qualifying_results, race_name, race_year, _ = qualifying_predict(race)
         drivers_to_predict = [list(result)[:len(result) - 3] for result in qualifying_results]
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
@@ -82,7 +88,7 @@ def predict(race_id):
 
     cached_result = db.get_race_log(feature_hash)
     if cached_result:
-        logging.info("Result is cached in prediction log, so returning that");
+        logging.info("Result is cached in prediction log, so returning that")
         return cached_result, race_name, race_year, race
 
     model = retrieve_race_model()
@@ -98,9 +104,8 @@ def predict(race_id):
     driver_ranking = [list(drivers_to_predict[position[1]]) for position in ranking]
 
     # Add to the log table
-    ts = time.time()
-    timestamp = datetime.datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.datetime.utcfromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     for index, driver in enumerate(driver_ranking):
-        db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string) 
+        db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string)
 
     return driver_ranking, race_name, race_year, race

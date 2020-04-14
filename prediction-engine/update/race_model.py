@@ -1,9 +1,9 @@
-import json
+
+import logging
+import traceback
 import tensorflow as tf
 import numpy as np
 from ..common.models import retrieve_race_model
-import logging
-import traceback
 from ..common.db import Database
 from ..common.utils import replace_none_with_average
 from ..common.race import predict as race_predict

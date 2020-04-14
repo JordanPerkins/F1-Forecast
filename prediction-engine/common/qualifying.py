@@ -10,7 +10,7 @@ from .models import retrieve_qualifying_model
 from .db import Database
 from .utils import tuples_to_dictionary, replace_none_with_average
 
-DB = Database.get_database()
+db = Database.get_database()
 
 def driver_replacements_to_laps(drivers_to_predict_ids, drivers_in_race, previous_race_at_track, race):
     """ Gets all relevant laps including those that have been replaced. """
@@ -19,7 +19,7 @@ def driver_replacements_to_laps(drivers_to_predict_ids, drivers_in_race, previou
     replacement_dict = {}
     if len(drivers_not_in_race) != 0:
         replacement_dict = tuples_to_dictionary(
-            DB.get_qualifying_driver_replacements(
+            db.get_qualifying_driver_replacements(
                 drivers_to_predict_ids,
                 previous_race_at_track,
                 drivers_not_in_race,
@@ -46,8 +46,8 @@ def driver_replacements_to_laps(drivers_to_predict_ids, drivers_in_race, previou
 
 def calculate_season_changes(race, replacement_dict, drivers_to_predict_ids):
     """ Calculates the average pace change between seasons. """
-    laps_dict = tuples_to_dictionary(DB.get_all_laps_prior_to_race(race))
-    other_laps_dict = tuples_to_dictionary(DB.get_laps_in_prior_season_to_race(race))
+    laps_dict = tuples_to_dictionary(db.get_all_laps_prior_to_race(race))
+    other_laps_dict = tuples_to_dictionary(db.get_laps_in_prior_season_to_race(race))
     result = []
     for driver in drivers_to_predict_ids:
         results = []
@@ -107,25 +107,25 @@ def predict(race_id):
     """ Obtain a prediction for the given (or next) race. """
     race = race_id
     if race is None:
-        race = DB.get_next_race_year_round_qualifying()[2]
+        race = db.get_next_race_year_round_qualifying()[2]
 
-    race_name, race_year = DB.get_race_by_id(race)
+    race_name, race_year = db.get_race_by_id(race)
 
     logging.info('Making prediction for race with ID %s and name %s', str(race), race_name)
 
-    previous_race_at_track = DB.get_previous_year_race_by_id(race)
-    drivers_to_predict = DB.get_qualifying_results_with_driver(race - 1)
+    previous_race_at_track = db.get_previous_year_race_by_id(race)
+    drivers_to_predict = db.get_qualifying_results_with_driver(race - 1)
     drivers_to_predict_ids = [list(result)[0] for result in drivers_to_predict]
     if previous_race_at_track:
         logging.info("Race at this track exists previously, so using this to make prediction")
-        drivers_in_race = DB.get_qualifying_results_with_driver(previous_race_at_track)
+        drivers_in_race = db.get_qualifying_results_with_driver(previous_race_at_track)
         deltas, _, replacement_dict = driver_replacements_to_laps(
             drivers_to_predict_ids,
             drivers_in_race,
             previous_race_at_track,
             race
         )
-        fastest_lap = float(DB.get_qualifying_fastest_lap(previous_race_at_track))
+        fastest_lap = float(db.get_qualifying_fastest_lap(previous_race_at_track))
         differences = calculate_season_changes(race, replacement_dict, drivers_to_predict_ids)
         season_change = round(sum(differences) / len(differences), 3)
     else:
@@ -147,7 +147,7 @@ def predict(race_id):
         season_change
     )
 
-    cached_result = DB.get_qualifying_log(fe_hash)
+    cached_result = db.get_qualifying_log(fe_hash)
     if cached_result:
         logging.info("Result is cached in prediction log, so returning that")
         return cached_result, race_name, race_year, race
@@ -172,5 +172,5 @@ def predict(race_id):
     # Add to the log table
     timestamp = datetime.utcfromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     for index, driver in enumerate(driver_ranking):
-        DB.insert_qualifying_log(driver[0], (index + 1), fe_hash, timestamp, driver[-1], fe_string)
+        db.insert_qualifying_log(driver[0], (index + 1), fe_hash, timestamp, driver[-1], fe_string)
     return driver_ranking, race_name, race_year, race
