@@ -161,19 +161,20 @@ def race_results(race=None):
         result = []
         for race_result in results:
             result.append({
-                'result_id': race_result[0],
-                'driver_ref': race_result[1],
-                'driver_number': race_result[2],
-                'driver_code': race_result[3],
-                'driver_forename': race_result[4],
-                'driver_surname': race_result[5],
-                'driver_dob': race_result[6],
-                'driver_nationality': race_result[7],
-                'driver_url': race_result[8],
-                'race_grid': race_result[9],
-                'race_position': race_result[10],
-                'race_points': race_result[11],
-                'race_laps': race_result[12]
+                'driver_id': race_result[0],
+                'result_id': race_result[1],
+                'driver_ref': race_result[2],
+                'driver_number': race_result[3],
+                'driver_code': race_result[4],
+                'driver_forename': race_result[5],
+                'driver_surname': race_result[6],
+                'driver_dob': race_result[7],
+                'driver_nationality': race_result[8],
+                'driver_url': race_result[9],
+                'race_grid': race_result[10],
+                'race_position': race_result[11],
+                'race_points': race_result[12],
+                'race_laps': race_result[13]
             })
 
         return jsonify({
@@ -204,19 +205,20 @@ def qualifying_results(race=None):
         result = []
         for qualifying_result in results:
             result.append({
-                'qualify_id': qualifying_result[0],
-                'driver_ref': qualifying_result[1],
-                'driver_number': qualifying_result[2],
-                'driver_code': qualifying_result[3],
-                'driver_forename': qualifying_result[4],
-                'driver_surname': qualifying_result[5],
-                'driver_dob': qualifying_result[6],
-                'driver_nationality': qualifying_result[7],
-                'driver_url': qualifying_result[8],
-                'qualifying_position': qualifying_result[9],
-                'qualifying_q1': qualifying_result[10],
-                'qualifying_q2': qualifying_result[11],
-                'qualifying_q3': qualifying_result[12]
+                'driver_id': qualifying_result[0],
+                'qualify_id': qualifying_result[1],
+                'driver_ref': qualifying_result[2],
+                'driver_number': qualifying_result[3],
+                'driver_code': qualifying_result[4],
+                'driver_forename': qualifying_result[5],
+                'driver_surname': qualifying_result[6],
+                'driver_dob': qualifying_result[7],
+                'driver_nationality': qualifying_result[8],
+                'driver_url': qualifying_result[9],
+                'qualifying_position': qualifying_result[10],
+                'qualifying_q1': qualifying_result[11],
+                'qualifying_q2': qualifying_result[12],
+                'qualifying_q3': qualifying_result[13]
             })
 
         return jsonify({

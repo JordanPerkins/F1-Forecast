@@ -23,10 +23,10 @@ const LastWinnerIntentHandler = {
     try {
       const result = await getLastResult();
       const { data } = result;
-      speakOutput = `${data.results[0].driver_nationality} driver ${data.results[0].driver_forename} \
-      ${data.results[0].driver_surname} won the ${data.last_race_year} ${data.last_race_name} grand prix after \
-      starting on the grid in <say-as interpret-as="ordinal">${data.results[0].race_grid}</say-as> position, \
-      scoring ${data.results[0].race_points} point${data.results[0].race_points === 1 ? '' : 's'}`;
+      speakOutput = `${data.results[0].driver_nationality} driver ${data.results[0].driver_forename} ` +
+      `${data.results[0].driver_surname} won the ${data.last_race_year} ${data.last_race_name} grand prix after ` +
+      `starting on the grid in <say-as interpret-as="ordinal">${data.results[0].race_grid}</say-as> position, ` +
+      `scoring ${data.results[0].race_points} point${data.results[0].race_points === 1 ? '' : 's'}`;
     } catch (e) {
       logger.error(`Error fetching result for LastWinnerIntentHandler: ${e}`);
       speakOutput = 'I was unable to retrieve race result information at this time. Please check back later';
@@ -53,9 +53,9 @@ const LastPoleIntentHandler = {
       const result = await getLastQualifyingResult();
       const { data } = result;
       const lapTime = getQualifyingLap(data.results[0]);
-      speakOutput = `${data.results[0].driver_nationality} driver ${data.results[0].driver_forename} \
-      ${data.results[0].driver_surname} started on pole position at the ${data.last_race_year} ${data.last_race_name} \
-      grand prix after a lap time of ${lapTime}.`;
+      speakOutput = `${data.results[0].driver_nationality} driver ${data.results[0].driver_forename} ` +
+      `${data.results[0].driver_surname} started on pole position at the ${data.last_race_year} ${data.last_race_name} ` +
+      `grand prix${lapTime ? ` after a lap time of ${lapTime}` : ''}.`;
     } catch (e) {
       logger.error(`Error fetching result for LastPoleIntentHandler: ${e}`);
       speakOutput = 'I was unable to retrieve race result information at this time. Please check back later';
@@ -84,13 +84,13 @@ const LastRacePositionIntentHandler = {
       const result = await getLastResult();
       const searchedResult = searchForDriver(result.data.results, handlerInput);
       if (!searchedResult) {
-        speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
-                For example, where did 44 finish at the last race`;
+        speakOutput = 'I could not find the driver you requested. Try using the driver number instead.' +
+        ' For example, where did 44 finish at the last race';
       } else {
-        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} \
-        ${searchedResult.driver_surname} finished in <say-as interpret-as="ordinal">${searchedResult.race_position}</say-as> \
-        at the ${result.data.last_race_year} ${result.data.last_race_name} grand prix, scoring \
-        ${searchedResult.race_points} point${searchedResult.race_points === 1 ? '' : 's'}.`;
+        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ` +
+        `${searchedResult.driver_surname} finished in <say-as interpret-as="ordinal">${searchedResult.race_position}</say-as> ` +
+        `at the ${result.data.last_race_year} ${result.data.last_race_name} grand prix, scoring ` +
+        `${searchedResult.race_points} point${searchedResult.race_points === 1 ? '' : 's'}.`;
       }
     } catch (e) {
       logger.error(`Error fetching result for LastRacePositionIntentHandler: ${e}`);
@@ -119,17 +119,17 @@ const LastQualifyingPositionIntentHandler = {
       const result = await getLastQualifyingResult();
       const searchedResult = searchForDriver(result.data.results, handlerInput);
       if (!searchedResult) {
-        speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
-                For example, where did 44 qualify at the last race`;
+        speakOutput = 'I could not find the driver you requested. Try using the driver number instead.' +
+        ' For example, where did 44 qualify at the last race';
       } else {
         const lapTime = getQualifyingLap(searchedResult);
-        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} \
-        ${searchedResult.driver_surname} qualified in \
-        <say-as interpret-as="ordinal">${searchedResult.qualifying_position}</say-as> at the ${result.data.last_race_year} \
-        ${result.data.last_race_name} grand prix, with a lap time of ${lapTime}`;
+        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ` +
+        `${searchedResult.driver_surname} qualified in ` +
+        `<say-as interpret-as="ordinal">${searchedResult.qualifying_position}</say-as> at the ${result.data.last_race_year} ` +
+        `${result.data.last_race_name} grand prix${lapTime ? `, with a lap time of ${lapTime}` : '' }`;
       }
     } catch (e) {
-      logger.error(`Error fetching result for LastRacePositionIntentHandler: ${e}`);
+      logger.error(`Error fetching result for LastQualifyingPositionIntentHandler: ${e}`);
       speakOutput = 'I was unable to retrieve race result information at this time. Please check back later';
     }
     return handlerInput.responseBuilder
@@ -157,12 +157,16 @@ const GetFullRaceResultIntentHandler = {
     try {
       const result = await getLastResult();
       const { data } = result;
+      if (data.results.length === 0) {
+        throw Error('Result was empty');
+      }
+
       speakOutput = `Here are the full results of the ${data.last_race_year} ${data.last_race_name} grand prix. `;
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < data.results.length) {
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-          <say-as interpret-as="ordinal">${i + 1}</say-as> ${data.results[i].driver_forename} \
-          ${data.results[i].driver_surname}</amazon:emotion>`;
+          speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>'+
+          `<say-as interpret-as="ordinal">${i + 1}</say-as> ${data.results[i].driver_forename} ` +
+          `${data.results[i].driver_surname}</amazon:emotion>`;
         }
       }
       if (config.listMax < data.results.length) {
@@ -206,11 +210,16 @@ const GetFullQualifyingResultIntentHandler = {
     try {
       const result = await getLastQualifyingResult();
       const { data } = result;
-      speakOutput = `Here are the full results of the ${data.last_race_year} ${data.last_race_name} grand prix \
-      qualifying session. `;
+      if (data.results.length === 0) {
+        throw Error('Result was empty');
+      }
+
+      speakOutput = `Here are the full results of the ${data.last_race_year} ${data.last_race_name} grand prix ` +
+      'qualifying session. ';
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < data.results.length) {
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ${data.results[i].driver_forename} ${data.results[i].driver_surname}</amazon:emotion>`;
+          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/><say-as interpret-as="ordinal">${i + 1}</say-as> ` +
+          `${data.results[i].driver_forename} ${data.results[i].driver_surname}</amazon:emotion>`;
         }
       }
       if (config.listMax < data.results.length) {

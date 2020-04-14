@@ -22,7 +22,8 @@ const PredictWinnerIntentHandler = {
     try {
       const result = await getRacePrediction();
       const { data } = result;
-      speakOutput = `The predicted winner of the ${data.year} ${data.name} grand prix is ${data.result[0].driver_nationality} driver ${data.result[0].driver_forename} ${data.result[0].driver_surname}`;
+      speakOutput = `The predicted winner of the ${data.year} ${data.name} grand prix is ` +
+      `${data.result[0].driver_nationality} driver ${data.result[0].driver_forename} ${data.result[0].driver_surname}`;
     } catch (e) {
       logger.error(`Error fetching result for PredictWinnerIntent: ${e}`);
       speakOutput = 'I was unable to make a race prediction at this time. Please check back later';
@@ -49,8 +50,8 @@ const PredictQualifyingIntentHandler = {
     try {
       const result = await getQualifyingPrediction();
       const { data } = result;
-      speakOutput = `The driver on pole position at the ${data.year} ${data.name} grand prix is predicted to be \
-      ${data.result[0].driver_nationality} driver ${data.result[0].driver_forename} ${data.result[0].driver_surname}`;
+      speakOutput = `The driver on pole position at the ${data.year} ${data.name} grand prix is predicted to be ` +
+     `${data.result[0].driver_nationality} driver ${data.result[0].driver_forename} ${data.result[0].driver_surname}`;
     } catch (e) {
       logger.error(`Error fetching result for PredictQualifyingIntent: ${e}`);
       speakOutput = 'I was unable to make a qualifying prediction at this time. Please check back later';
@@ -78,13 +79,13 @@ const PredictRacePositionIntentHandler = {
       const result = await getRacePrediction();
       const searchedResult = searchForDriver(result.data.result, handlerInput);
       if (!searchedResult) {
-        speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
-                For example, where will 44 finish at the next race`;
+        speakOutput = 'I could not find the driver you requested. Try using the driver number instead. ' +
+        'For example, where will 44 finish at the next race';
       } else {
-        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} \
-        ${searchedResult.driver_surname} is predicted to finish in \
-        <say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} \
-        ${result.data.name} grand prix`;
+        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ` +
+        `${searchedResult.driver_surname} is predicted to finish in ` +
+        `<say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} ` +
+        `${result.data.name} grand prix`;
       }
     } catch (e) {
       logger.error(`Error fetching result for PredictRacePositionIntent: ${e}`);
@@ -113,13 +114,13 @@ const PredictQualifyingPositionIntentHandler = {
       const result = await getQualifyingPrediction();
       const searchedResult = searchForDriver(result.data.result, handlerInput);
       if (!searchedResult) {
-        speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
-                For example, where will 44 qualify at the next race`;
+        speakOutput = 'I could not find the driver you requested. Try using the driver number instead. ' +
+        'For example, where will 44 qualify at the next race';
       } else {
-        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} \
-        ${searchedResult.driver_surname} is predicted to qualify in \
-        <say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} \
-        ${result.data.name} grand prix`;
+        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ` +
+        `${searchedResult.driver_surname} is predicted to qualify in ` +
+        `<say-as interpret-as="ordinal">${searchedResult.position}</say-as> at the ${result.data.year} ` +
+        `${result.data.name} grand prix`;
         if (searchedResult.driver_quali_result) {
           speakOutput += ` with a lap time ${searchedResult.driver_quali_result} seconds away from pole position`;
         }
@@ -152,12 +153,16 @@ const ReadRaceForecastIntentHandler = {
     try {
       const result = await getRacePrediction();
       const { data } = result;
+      if (data.result.length === 0) {
+        throw Error('Result was empty');
+      }
+
       speakOutput = `Here is the race prediction forecast for the ${data.year} ${data.name} grand prix.`;
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < data.result.length) {
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-          <say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} \
-          ${data.result[i].driver_surname} </amazon:emotion>`;
+          speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+          `<say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ` + 
+          `${data.result[i].driver_surname} </amazon:emotion>`;
         }
       }
       if (config.listMax < data.result.length) {
@@ -166,7 +171,7 @@ const ReadRaceForecastIntentHandler = {
         attributes.lastResult = data.result;
         return handlerInput.responseBuilder
           .speak(speakOutput)
-          .reprompt('<break time="1s"/>Would you like me to continue?')
+          .reprompt('Would you like me to continue?')
           .getResponse();
       }
       return handlerInput.responseBuilder
@@ -200,12 +205,16 @@ const ReadQualifyingForecastIntentHandler = {
     try {
       const result = await getQualifyingPrediction();
       const { data } = result;
+      if (data.result.length === 0) {
+        throw Error('Result was empty');
+      }
+
       speakOutput = `Here is the qualifying prediction forecast for the ${data.year} ${data.name} grand prix.`;
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < data.result.length) {
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-          <say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} \
-          ${data.result[i].driver_surname} </amazon:emotion>`;
+          speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+          `<say-as interpret-as="ordinal">${i + 1}</say-as> ${data.result[i].driver_forename} ` +
+          `${data.result[i].driver_surname} </amazon:emotion>`;
         }
       }
       if (config.listMax < data.result.length) {
@@ -214,7 +223,7 @@ const ReadQualifyingForecastIntentHandler = {
         attributes.lastResult = data.result;
         return handlerInput.responseBuilder
           .speak(speakOutput)
-          .reprompt('<break time="1s"/>Would you like me to continue?')
+          .reprompt('Would you like me to continue?')
           .getResponse();
       }
       return handlerInput.responseBuilder

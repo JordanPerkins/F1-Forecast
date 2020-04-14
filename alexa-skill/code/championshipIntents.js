@@ -39,15 +39,15 @@ const ChampionshipLeaderIntentHandler = {
       const driversLeader = driversResult.data.standings[0];
       const constructorsLeader = constructorsResult.data.standings[0];
 
-      speakOutput = `The driver's championship is currently led by ${driversLeader.driver_nationality} driver \
-      ${driversLeader.driver_forename} ${driversLeader.driver_surname} with ${driversLeader.driver_points} \
-      point${driversLeader.driver_points === 1 ? '' : 's'} and ${driversLeader.driver_wins} \
-      win${driversLeader.driver_wins === 1 ? '' : 's'}. `;
+      speakOutput = `The driver's championship is currently led by ${driversLeader.driver_nationality} driver ` +
+      `${driversLeader.driver_forename} ${driversLeader.driver_surname} with ${driversLeader.driver_points} ` +
+      `point${driversLeader.driver_points === 1 ? '' : 's'} and ${driversLeader.driver_wins} ` +
+      `win${driversLeader.driver_wins === 1 ? '' : 's'}. `;
 
-      speakOutput += `The constructor's championship is currently led by ${constructorsLeader.constructor_nationality} \
-      constructor ${constructorsLeader.constructor_name} with ${constructorsLeader.constructor_points} \
-      point${constructorsLeader.constructor_points === 1 ? '' : 's'} and ${constructorsLeader.constructor_wins} \
-      win${constructorsLeader.constructor_wins === 1 ? '' : 's'}.`;
+      speakOutput += `The constructor's championship is currently led by ${constructorsLeader.constructor_nationality} ` +
+      `constructor ${constructorsLeader.constructor_name} with ${constructorsLeader.constructor_points} ` +
+      `point${constructorsLeader.constructor_points === 1 ? '' : 's'} and ${constructorsLeader.constructor_wins} ` +
+      `win${constructorsLeader.constructor_wins === 1 ? '' : 's'}.`;
     } catch (e) {
       logger.error(`Error fetching result for ChampionshipLeaderIntentHandler: ${e}`);
       speakOutput = 'I was unable to get the championship information at this time. Please check back later';
@@ -75,14 +75,14 @@ const ChampionshipDriverIntentHandler = {
       const result = await getDriversChampionship();
       const searchedResult = searchForDriver(result.data.standings, handlerInput);
       if (!searchedResult) {
-        speakOutput = `I coud not find the driver you requested. Try using the driver number instead.
-                For example, where is 44 in the standings`;
+        speakOutput = 'I could not find the driver you requested. Try using the driver number instead. ' +
+        'For example, where is 44 in the standings';
       } else {
-        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} \
-        ${searchedResult.driver_surname} is currently \
-        <say-as interpret-as="ordinal">${searchedResult.driver_position}</say-as> in the championship, with \
-        ${searchedResult.driver_points} point${searchedResult.driver_points === 1 ? '' : 's'} and \
-        ${searchedResult.driver_wins} win${searchedResult.driver_wins === 1 ? '' : 's'}`;
+        speakOutput = `${searchedResult.driver_nationality} driver ${searchedResult.driver_forename} ` +
+        `${searchedResult.driver_surname} is currently ` +
+        `<say-as interpret-as="ordinal">${searchedResult.driver_position}</say-as> in the championship, with ` +
+        `${searchedResult.driver_points} point${searchedResult.driver_points === 1 ? '' : 's'} and ` +
+        `${searchedResult.driver_wins} win${searchedResult.driver_wins === 1 ? '' : 's'}`;
       }
     } catch (e) {
       logger.error(`Error fetching result for ChampionshipDriverIntentHandler: ${e}`);
@@ -111,12 +111,13 @@ const ChampionshipConstructorIntentHandler = {
       const result = await getConstructorsChampionship();
       const searchedResult = searchForConstructor(result.data.standings, handlerInput);
       if (!searchedResult) {
-        speakOutput = 'I coud not find the constructor you requested. You can get a full championship breakdown by asking f. one forecast for the full constructors standings.';
+        speakOutput = 'I could not find the constructor you requested. You can get a full championship breakdown '
+        + 'by asking f. one forecast for the full constructors standings.';
       } else {
-        speakOutput = `${searchedResult.constructor_nationality} constructor ${searchedResult.constructor_name} is \
-        currently <say-as interpret-as="ordinal">${searchedResult.constructor_position}</say-as> in the championship, \
-        with ${searchedResult.constructor_points} point${searchedResult.constructor_points === 1 ? '' : 's'} and \
-        ${searchedResult.constructor_wins} win${searchedResult.constructor_wins === 1 ? '' : 's'}`;
+        speakOutput = `${searchedResult.constructor_nationality} constructor ${searchedResult.constructor_name} is ` +
+        `currently <say-as interpret-as="ordinal">${searchedResult.constructor_position}</say-as> in the championship, ` +
+        `with ${searchedResult.constructor_points} point${searchedResult.constructor_points === 1 ? '' : 's'} and ` +
+        `${searchedResult.constructor_wins} win${searchedResult.constructor_wins === 1 ? '' : 's'}`;
       }
     } catch (e) {
       logger.error(`Error fetching result for ChampionshipConstructorIntentHandler: ${e}`);
@@ -146,13 +147,17 @@ const FullChampionshipDriverIntentHandler = {
     try {
       const result = await getDriversChampionship();
       const { data } = result;
+      if (data.standings.length === 0) {
+        throw Error('Result was empty');
+      }
+
       speakOutput = `Here are the full drivers standings for the ${data.last_race_year} season. `;
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < data.standings.length) {
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-          <say-as interpret-as="ordinal">${i + 1}</say-as> ${data.standings[i].driver_forename} \
-          ${data.standings[i].driver_surname} with ${data.standings[i].driver_points} \
-          point${data.standings[i].driver_points === 1 ? '' : 's'}. </amazon:emotion>`;
+          speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+          `<say-as interpret-as="ordinal">${i + 1}</say-as> ${data.standings[i].driver_forename} ` +
+          `${data.standings[i].driver_surname} with ${data.standings[i].driver_points} ` +
+          `point${data.standings[i].driver_points === 1 ? '' : 's'}. </amazon:emotion>`;
         }
       }
       if (config.listMax < data.standings.length) {
@@ -195,13 +200,17 @@ const FullChampionshipConstructorsIntentHandler = {
     try {
       const result = await getConstructorsChampionship();
       const { data } = result;
+      if (data.standings.length === 0) {
+        throw Error('Result was empty');
+      }
+
       speakOutput = `Here are the full constructors standings for the ${data.last_race_year} season. `;
       for (let i = 0; i < config.listMax; i += 1) {
         if (i < data.standings.length) {
-          speakOutput += `<amazon:emotion name="excited" intensity="medium"><break time="1s"/>\
-          <say-as interpret-as="ordinal">${i + 1}</say-as> ${data.standings[i].constructor_name} with \
-          ${data.standings[i].constructor_points} point${data.standings[i].constructor_points === 1 ? '' : 's'}. \
-          </amazon:emotion>`;
+          speakOutput += '<amazon:emotion name="excited" intensity="medium"><break time="1s"/>' +
+          `<say-as interpret-as="ordinal">${i + 1}</say-as> ${data.standings[i].constructor_name} with ` +
+          `${data.standings[i].constructor_points} point${data.standings[i].constructor_points === 1 ? '' : 's'}. ` +
+          '</amazon:emotion>';
         }
       }
       if (config.listMax < data.standings.length) {
@@ -251,17 +260,17 @@ const WorldChampionIntentHandler = {
         if (!driversResult.data.standings.length || !constructorsResult.data.standings.length) {
           speakOutput = 'Please provide a valid season year. For example, who was world champion in 2009';
         } else {
-          speakOutput = `The driver's world champion in ${year} was \
-          ${driversResult.data.standings[0].driver_nationality} driver ${driversResult.data.standings[0].driver_forename} \
-          ${driversResult.data.standings[0].driver_surname} with ${driversResult.data.standings[0].driver_points} \
-          point${driversResult.data.standings[0].driver_points === 1 ? '' : 's'} and \
-          ${driversResult.data.standings[0].driver_wins} win${driversResult.data.standings[0].driver_wins === 1 ? '' : 's'}. \
-          The constructor's world champion was ${constructorsResult.data.standings[0].constructor_nationality} constructor \
-          ${constructorsResult.data.standings[0].constructor_name} with \
-          ${constructorsResult.data.standings[0].constructor_points} \
-          point${constructorsResult.data.standings[0].constructor_points === 1 ? '' : 's'} and \
-          ${constructorsResult.data.standings[0].constructor_wins} \
-          win${constructorsResult.data.standings[0].constructor_wins === 1 ? '' : 's'}.`;
+          speakOutput = `The driver's world champion in ${year} was ` +
+          `${driversResult.data.standings[0].driver_nationality} driver ${driversResult.data.standings[0].driver_forename} ` +
+          `${driversResult.data.standings[0].driver_surname} with ${driversResult.data.standings[0].driver_points} ` +
+          `point${driversResult.data.standings[0].driver_points === 1 ? '' : 's'} and ` +
+          `${driversResult.data.standings[0].driver_wins} win${driversResult.data.standings[0].driver_wins === 1 ? '' : 's'}. ` +
+          `The constructor's world champion was ${constructorsResult.data.standings[0].constructor_nationality} constructor ` +
+          `${constructorsResult.data.standings[0].constructor_name} with ` +
+          `${constructorsResult.data.standings[0].constructor_points} ` +
+          `point${constructorsResult.data.standings[0].constructor_points === 1 ? '' : 's'} and ` +
+          `${constructorsResult.data.standings[0].constructor_wins} ` +
+          `win${constructorsResult.data.standings[0].constructor_wins === 1 ? '' : 's'}.`;
         }
       }
       return handlerInput.responseBuilder

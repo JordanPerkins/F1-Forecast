@@ -480,6 +480,7 @@ class Database:
         cursor = self.query(
             """
                 SELECT
+                    drivers.driverId,
                     resultId,
                     driverRef,
                     drivers.number,
@@ -512,6 +513,7 @@ class Database:
         cursor = self.query(
             """
                 SELECT
+                    divers.driverId,
                     qualifyId,
                     driverRef,
                     drivers.number,
@@ -644,3 +646,9 @@ class Database:
         )
         self.database.commit()
         return cursor.rowcount
+
+    def get_evaluation_races(self):
+        """ Gets the full list of evaluation raceId's. """
+        cursor = self.query("SELECT raceId FROM races WHERE evaluationRace IS TRUE;")
+        return cursor.fetchall()
+

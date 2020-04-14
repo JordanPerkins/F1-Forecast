@@ -92,7 +92,7 @@ module.exports.searchForDriver = (result, handlerInput) => {
   logger.info(`Received slot value of ${value}`);
 
   if (!result || result.length === 0) {
-    return null;
+    throw Error('Result was empty');
   }
 
   const valueAsNum = Number.parseInt(value, 10);
@@ -161,11 +161,10 @@ module.exports.searchForRace = (result, handlerInput) => {
 
   const races = result.map((race) => {
     const grandPrixName = race.race_name.split(' ').slice(0, -2).join(' ').toLowerCase();
-    const circuitName = race.circuit_ref.replace('_', ' ').toLowerCase();
+    const circuitName = race.circuit_ref.replace(/_/g, ' ').toLowerCase();
     const distanceValue = Math.min(
       levenshtein(grandPrixName, value.toLowerCase()),
       levenshtein(race.circuit_location.toLowerCase(), value.toLowerCase()),
-      levenshtein(race.circuit_country.toLowerCase(), value.toLowerCase()),
       levenshtein(race.circuit_country.toLowerCase(), value.toLowerCase()),
       levenshtein(circuitName, value.toLowerCase()),
     );
@@ -302,7 +301,7 @@ module.exports.searchForConstructor = (result, handlerInput) => {
   logger.info(`Received slot value of ${value}`);
 
   if (!result || result.length === 0) {
-    return null;
+    throw Error('Result was empty');
   }
 
   const constructors = result.map((constructor) => ({
@@ -399,7 +398,7 @@ module.exports.getLastQualifyingResult = async () => {
  * @returns {String} Qualifying lap as a readable string
  */
 module.exports.getQualifyingLap = (driver) => {
-  let lap = null;
+  let lap;
   if (driver.qualifying_q3) {
     lap = driver.qualifying_q3;
   } else if (driver.qualifying_q2) {
@@ -408,10 +407,12 @@ module.exports.getQualifyingLap = (driver) => {
     lap = driver.qualifying_q1;
   }
 
-  const lapParts = lap.split(':');
-  if (lapParts.length === 2) {
-    return `${lapParts[0]} minute${lapParts[0] > 1 ? 's' : ''} ${lapParts[1]}`;
+  if (lap) {
+    const lapParts = lap.split(':');
+    if (lapParts.length === 2) {
+      return `${lapParts[0]} minute${lapParts[0] > 1 ? 's' : ''} ${lapParts[1]}`;
+    }
   }
 
-  return lap;
+  return null;
 };
