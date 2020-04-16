@@ -513,7 +513,7 @@ class Database:
         cursor = self.query(
             """
                 SELECT
-                    divers.driverId,
+                    drivers.driverId,
                     qualifyId,
                     driverRef,
                     drivers.number,
