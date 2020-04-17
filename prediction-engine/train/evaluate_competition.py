@@ -10,11 +10,11 @@ def evaluate_competition(race=True):
 
     races = data.keys()
     results = evaluate(race, races, data)
-    print(results)
 
-    results1 = evaluate(race)
+    results1 = evaluate(race, races)
     print(results1)
+    print(results)
 
 logging.basicConfig()
 logging.root.setLevel(logging.NOTSET)
-evaluate_competition(race=False)
+evaluate_competition(race=True)
