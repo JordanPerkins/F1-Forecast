@@ -48,9 +48,9 @@ def evaluate(race=True, races=None, override_predictions=None):
             ]
         else:
             if race:
-                predicted_result = race_predict(race_id)[0]
+                predicted_result = race_predict(race_id, disable_cache=True)[0]
             else:
-                predicted_result = qualifying_predict(race_id)[0]
+                predicted_result = qualifying_predict(race_id, disable_cache=True)[0]
 
             actual_ranking = [
                 actual_result[driver[0]][0][position_index] for driver in predicted_result

@@ -103,7 +103,7 @@ def generate_feature_hash(race_name, deltas, differences, fastest_lap, season_ch
     hash_result = hashlib.sha256(hash_string.encode()).hexdigest()
     return hash_result, hash_string
 
-def predict(race_id):
+def predict(race_id, disable_cache=False):
     """ Obtain a prediction for the given (or next) race. """
     race = race_id
     if race is None:
@@ -148,7 +148,7 @@ def predict(race_id):
     )
 
     cached_result = db.get_qualifying_log(fe_hash)
-    if cached_result:
+    if cached_result and not disable_cache:
         logging.info("Result is cached in prediction log, so returning that")
         return cached_result, race_name, race_year, race
 
