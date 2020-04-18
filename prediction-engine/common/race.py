@@ -10,7 +10,7 @@ import numpy as np
 from .models import retrieve_race_model
 from .s3 import upload_race_model
 from .db import Database
-from .utils import replace_none_with_average
+from .utils import replace_none_with_average, tuples_to_dictionary
 from .qualifying import predict as qualifying_predict
 
 db = Database.get_database()
@@ -80,10 +80,18 @@ def predict(race_id):
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
         qualifying_grid = list(range(1, len(drivers_to_predict) + 1))
 
+    race_averages = tuples_to_dictionary(db.get_race_averages(race))
+
+    race_averages_array = replace_none_with_average([
+        (race_averages[driver][0][0] if driver in race_averages else None)
+        for driver in drivers_to_predict
+    ])
+
     features = {
         'race': np.array([race_name] * len(drivers_to_predict)),
         'qualifying': np.array(qualifying_deltas),
-        'grid': np.array(qualifying_grid)
+        'grid': np.array(qualifying_grid),
+        'average_form': np.array(race_averages_array)
     }
 
     feature_hash, feature_string = generate_feature_hash(race_name, qualifying_deltas, qualifying_grid)
@@ -112,16 +120,19 @@ def predict(race_id):
 
     return driver_ranking, race_name, race_year, race
 
-def train(num_epochs=200, batch_size=200):
+def train(num_epochs=200, batch_size=200, load_model=True):
     last_race_id = db.get_last_race_id()
     db.mark_races_as_in_progress(last_race_id)
     training_data = db.get_race_dataset()
-    model = retrieve_race_model()
+    model = retrieve_race_model(load_model)
+
+    logging.info("Data received from SQL, now training")
 
     races = [item[0] for item in training_data]
     grid = [item[1] for item in training_data]
     qualifying = replace_none_with_average([item[2] for item in training_data])
     results = [str(item[3]) for item in training_data]
+    average_form = replace_none_with_average([item[4] for item in training_data])
 
     if len(races) > 0:
         steps = math.ceil(len(races) / batch_size)
@@ -129,7 +140,8 @@ def train(num_epochs=200, batch_size=200):
         features = {
             'race': np.array(races),
             'qualifying': np.array(qualifying),
-            'grid': np.array(grid)
+            'grid': np.array(grid),
+            'average_form': np.array(average_form)
         }
 
         train_input_fn = tf.estimator.inputs.numpy_input_fn(

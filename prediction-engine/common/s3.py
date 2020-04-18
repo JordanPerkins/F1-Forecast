@@ -32,9 +32,11 @@ def upload_model(model):
         tar_handle.add(FILE_DIR+model)
     s3.upload_file(FILE_DIR+model+'.tar.gz', BUCKET, model+'.tar.gz')
 
-def fetch_race_model():
+def fetch_race_model(load_model=True):
     """ Returns the race model. """
-    return fetch_model(RACE_MODEL)
+    if load_model:
+        return fetch_model(RACE_MODEL)
+    return FILE_DIR+model
 
 def fetch_qualifying_model():
     """ Returns the qualifying model. """

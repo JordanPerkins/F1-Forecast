@@ -4,7 +4,7 @@ import tensorflow as tf
 from .s3 import fetch_race_model, fetch_qualifying_model
 from .db import Database
 
-def retrieve_race_model():
+def retrieve_race_model(load_model=True):
     """ Returns the Tensorflow race model. """
     race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
         'race',
@@ -14,11 +14,12 @@ def retrieve_race_model():
     feature_columns = [
         tf.feature_column.numeric_column(key='qualifying'),
         tf.feature_column.numeric_column(key='grid'),
+        tf.feature_column.numeric_column(key='average_form'),
         tf.feature_column.indicator_column(race_feature)
     ]
 
     model = tf.estimator.DNNClassifier(
-        model_dir=fetch_race_model(),
+        model_dir=fetch_race_model(load_model),
         hidden_units=[10],
         feature_columns=feature_columns,
         n_classes=21,

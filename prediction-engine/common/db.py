@@ -378,7 +378,18 @@ class Database:
                         IFNULL(qualifying1.q2Seconds, ~0),
                         IFNULL(qualifying1.q3Seconds, ~0)))
                     FROM qualifying qualifying1 WHERE qualifying1.raceId = qualifying.raceId)),
-                results.position
+                results.position,
+                (SELECT AVG(position)
+                    FROM
+                        (SELECT position
+                            FROM results results1
+                            WHERE results1.raceId < results.raceId
+                            AND results.driverId = results1.driverId
+                            AND position IS NOT NULL
+                            ORDER BY raceId DESC
+                            LIMIT 3) 
+                        results2) 
+                    as avg
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
             INNER JOIN qualifying ON qualifying.raceId=results.raceId
@@ -661,4 +672,26 @@ class Database:
                 races SET raceTrained = NULL;"""
         )
         return cursor.rowcount
+
+    def get_race_averages(self, race):
+        """ Fetches the last averages for each driver. """
+        cursor = self.query(
+            """
+                SELECT
+                    driverId,
+                    (SELECT AVG(position)
+                        FROM
+                            (SELECT position 
+                                FROM results results1
+                                WHERE results1.raceId < results.raceId
+                                AND results.driverId = results1.driverId
+                                AND position IS NOT NULL
+                                ORDER BY raceId DESC
+                                LIMIT 3) 
+                                results2) 
+                        as avg
+                FROM results WHERE raceId = 1030;
+            """
+        )
+        return cursor.fetchall()
 

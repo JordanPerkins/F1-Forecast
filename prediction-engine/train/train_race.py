@@ -10,7 +10,7 @@ db = Database.get_database()
 def train():
     logging.info("Starting training")
     db.mark_all_races_as_untrained()
-    train_race()
+    train_race(load_model=False)
     results = evaluate()
     logging.info("------- Network evaluation results -----")
     print_results(results)
