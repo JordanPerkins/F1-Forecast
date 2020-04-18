@@ -36,7 +36,7 @@ def fetch_race_model(load_model=True):
     """ Returns the race model. """
     if load_model:
         return fetch_model(RACE_MODEL)
-    return FILE_DIR+model
+    return FILE_DIR+RACE_MODEL
 
 def fetch_qualifying_model():
     """ Returns the qualifying model. """
