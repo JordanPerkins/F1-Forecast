@@ -36,13 +36,13 @@ def evaluate(race=True, races=None, override_predictions=None):
 
         if override_predictions:
             if race:
-                predictions = override_predictions[race_id]['race']
+                predictions = override_predictions[str(race_id)]['race']
             else:
-                predictions = override_predictions[race_id]['qualifying']
+                predictions = override_predictions[str(race_id)]['qualifying']
 
             actual_ranking = [
                 actual_result[driver][0][position_index]
-                for driver in override_predictions[race_id]['race']
+                for driver in predictions
                 if (driver in actual_result
                     and actual_result[driver][0][position_index] is not None)
             ]

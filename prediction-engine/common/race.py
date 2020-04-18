@@ -5,8 +5,10 @@ import datetime
 import hashlib
 import logging
 import tensorflow as tf
+import math
 import numpy as np
 from .models import retrieve_race_model
+from .s3 import upload_race_model
 from .db import Database
 from .utils import replace_none_with_average
 from .qualifying import predict as qualifying_predict
@@ -88,7 +90,7 @@ def predict(race_id):
 
     cached_result = db.get_race_log(feature_hash)
     if cached_result:
-        logging.info("Result is cached in prediction log, so returning that")
+        logging.warn("Result is cached in prediction log, so returning that")
         return cached_result, race_name, race_year, race
 
     model = retrieve_race_model()
@@ -109,3 +111,41 @@ def predict(race_id):
         db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string)
 
     return driver_ranking, race_name, race_year, race
+
+def train(num_epochs=200, batch_size=200):
+    last_race_id = db.get_last_race_id()
+    db.mark_races_as_in_progress(last_race_id)
+    training_data = db.get_race_dataset()
+    model = retrieve_race_model()
+
+    races = [item[0] for item in training_data]
+    grid = [item[1] for item in training_data]
+    qualifying = replace_none_with_average([item[2] for item in training_data])
+    results = [str(item[3]) for item in training_data]
+
+    if len(races) > 0:
+        steps = math.ceil(len(races) / batch_size)
+
+        features = {
+            'race': np.array(races),
+            'qualifying': np.array(qualifying),
+            'grid': np.array(grid)
+        }
+
+        train_input_fn = tf.estimator.inputs.numpy_input_fn(
+            x=features,
+            y=np.array(results),
+            batch_size=batch_size,
+            num_epochs=num_epochs,
+            shuffle=True
+        )
+
+        model.train(input_fn=train_input_fn, steps=steps)
+
+        db.mark_races_as_complete()
+
+        logging.info("Training complete, now uploading model")
+        upload_race_model()
+        return True
+    logging.info("Nothing to do, no races waiting for training")
+

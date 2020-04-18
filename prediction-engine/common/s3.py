@@ -26,11 +26,24 @@ def fetch_model(model):
             return FILE_DIR+model
         raise
 
+def upload_model(model):
+    """ Attempts to upload the model with the given name. """
+    with tarfile.open(FILE_DIR+model+'.tar.gz', "w:gz") as tar_handle:
+        tar_handle.add(FILE_DIR+model)
+    s3.upload_file(FILE_DIR+model+'.tar.gz', BUCKET, model+'.tar.gz')
+
 def fetch_race_model():
     """ Returns the race model. """
     return fetch_model(RACE_MODEL)
 
-
 def fetch_qualifying_model():
     """ Returns the qualifying model. """
     return fetch_model(QUALIFYING_MODEL)
+
+def upload_race_model():
+    """ Returns the race model. """
+    return upload_model(RACE_MODEL)
+
+def upload_qualifying_model():
+    """ Returns the qualifying model. """
+    return upload_model(QUALIFYING_MODEL)

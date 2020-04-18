@@ -352,13 +352,15 @@ class Database:
         cursor = self.query("DELETE FROM races WHERE raceId = %s", (race_id,))
         return cursor.rowcount
 
-    def mark_races_as_in_progress(self):
+    def mark_races_as_in_progress(self, last_race_id):
         """ Marks all untrained races as now in progress. """
         cursor = self.query(
             """UPDATE
                 races SET raceTrained = FALSE
             WHERE raceTrained IS NULL
-                AND evaluationRace IS NOT TRUE;"""
+                AND evaluationRace IS NOT TRUE
+                AND raceId <= %s;""",
+                (last_race_id,)
         )
         return cursor.rowcount
 
@@ -651,4 +653,12 @@ class Database:
         """ Gets the full list of evaluation raceId's. """
         cursor = self.query("SELECT raceId FROM races WHERE evaluationRace IS TRUE;")
         return cursor.fetchall()
+
+    def mark_all_races_as_untrained(self):
+        """ Marks all races as untrained. """
+        cursor = self.query(
+            """UPDATE
+                races SET raceTrained = NULL;"""
+        )
+        return cursor.rowcount
 
