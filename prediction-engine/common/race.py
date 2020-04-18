@@ -80,11 +80,13 @@ def predict(race_id):
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
         qualifying_grid = list(range(1, len(drivers_to_predict) + 1))
 
+    driver_ids = [result[0] for result in qualifying_results]
+
     race_averages = tuples_to_dictionary(db.get_race_averages(race))
 
     race_averages_array = replace_none_with_average([
         (race_averages[driver][0][0] if driver in race_averages else None)
-        for driver in drivers_to_predict
+        for driver in driver_ids
     ])
 
     features = {
