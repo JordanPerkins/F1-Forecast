@@ -15,6 +15,7 @@ def retrieve_race_model(load_model=True):
         tf.feature_column.numeric_column(key='qualifying'),
         tf.feature_column.numeric_column(key='grid'),
         tf.feature_column.numeric_column(key='average_form'),
+        tf.feature_column.numeric_column(key='average_form_others'),
         tf.feature_column.indicator_column(race_feature)
     ]
 
@@ -48,7 +49,7 @@ def retrieve_qualifying_model():
 
     model = tf.estimator.DNNRegressor(
         model_dir=fetch_qualifying_model(),
-        hidden_units=[10],
+        hidden_units=[50,50],
         feature_columns=feature_columns,
         optimizer=tf.train.ProximalAdagradOptimizer(
             learning_rate=0.1,

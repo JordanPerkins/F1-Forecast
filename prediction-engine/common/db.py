@@ -389,7 +389,19 @@ class Database:
                             ORDER BY raceId DESC
                             LIMIT 3) 
                         results2) 
-                    as avg
+                    as avg,
+                (SELECT AVG(avg.position)
+                    FROM
+                        (SELECT position,
+                            RANK() OVER (PARTITION BY driverId ORDER BY raceId DESC) AS rnk
+                            FROM results results1
+                            WHERE results1.raceId < results.raceId
+                            AND driverId IN
+                                (SELECT driverId FROM results results2
+                                    WHERE results2.raceId = results.raceId
+                                    AND results2.driverId != results.driverId)
+                                    AND results1.position is NOT NULL)
+                    AS avg WHERE avg.rnk < 3)
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
             INNER JOIN qualifying ON qualifying.raceId=results.raceId
@@ -690,8 +702,33 @@ class Database:
                                 LIMIT 3) 
                                 results2) 
                         as avg
-                FROM results WHERE raceId = 1030;
+                FROM results WHERE raceId = %s;
+            """,
+            (race,)
+        )
+        return cursor.fetchall()
+
+    def get_other_race_averages(self, race):
+        """ Fetches the last averages for the other drivers. """
+        cursor = self.query(
             """
+                SELECT
+                    driverId,
+                    (SELECT AVG(avg.position)
+                        FROM
+                            (SELECT position,
+                                RANK() OVER (PARTITION BY driverId ORDER BY raceId DESC) AS rnk
+                                FROM results
+                                WHERE raceId < results1.raceId
+                                AND driverId IN
+                                    (SELECT driverId FROM results
+                                        WHERE raceId = results1.raceId
+                                        AND driverId != results1.driverId)
+                                        AND position is NOT NULL)
+                                AS avg WHERE avg.rnk < 3)
+                    FROM results results1 WHERE raceId = %s;
+            """,
+            (race,)
         )
         return cursor.fetchall()
 
