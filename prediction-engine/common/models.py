@@ -15,15 +15,17 @@ def retrieve_race_model(load_model=True):
         tf.feature_column.numeric_column(key='qualifying'),
         tf.feature_column.numeric_column(key='grid'),
         tf.feature_column.numeric_column(key='average_form'),
-        tf.feature_column.numeric_column(key='average_form_others'),
+        tf.feature_column.numeric_column(key='circuit_average_form'),
+        tf.feature_column.numeric_column(key='championship_standing'),
+        tf.feature_column.numeric_column(key='position_changes'),
         tf.feature_column.indicator_column(race_feature)
     ]
 
     model = tf.estimator.DNNClassifier(
         model_dir=fetch_race_model(load_model),
-        hidden_units=[10],
+        hidden_units=[50, 50],
         feature_columns=feature_columns,
-        n_classes=21,
+        n_classes=20,
         label_vocabulary=[str(i) for i in range(1, 21)],
         optimizer=tf.train.ProximalAdagradOptimizer(
             learning_rate=0.1,
@@ -49,7 +51,7 @@ def retrieve_qualifying_model():
 
     model = tf.estimator.DNNRegressor(
         model_dir=fetch_qualifying_model(),
-        hidden_units=[50,50],
+        hidden_units=[10],
         feature_columns=feature_columns,
         optimizer=tf.train.ProximalAdagradOptimizer(
             learning_rate=0.1,

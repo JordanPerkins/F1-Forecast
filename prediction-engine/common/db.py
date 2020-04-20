@@ -365,49 +365,133 @@ class Database:
         return cursor.rowcount
 
     def get_race_dataset(self):
-        """ Gets the full race dataset for training. """
+        """ Gets the race dataset for training. """
         cursor = self.query(
             """
             SELECT
                 REPLACE(LOWER(races.name), ' grand prix', ''),
                 results.grid,
-                NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0),
-                    IFNULL(qualifying.q2Seconds, ~0),
-                    IFNULL(qualifying.q3Seconds, ~0))), ~0)
-                    -((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0),
-                        IFNULL(qualifying1.q2Seconds, ~0),
-                        IFNULL(qualifying1.q3Seconds, ~0)))
-                    FROM qualifying qualifying1 WHERE qualifying1.raceId = qualifying.raceId)),
-                results.position,
+                (SELECT
+                    NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0),
+                        IFNULL(qualifying.q2Seconds, ~0),
+                        IFNULL(qualifying.q3Seconds, ~0))), ~0)
+                        -((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0)))
+                                FROM qualifying qualifying1
+                                WHERE qualifying1.raceId = qualifying.raceId))
+                FROM qualifying WHERE qualifying.raceId = results.raceId
+                AND qualifying.driverId = results.driverId),
+                results.position
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+            ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_race_dataset_form(self):
+        """ Gets the form averages for the training set. """
+        cursor = self.query(
+            """
+            SELECT
                 (SELECT AVG(position)
                     FROM
-                        (SELECT position
+                        (SELECT position 
                             FROM results results1
-                            WHERE results1.raceId < results.raceId
+                            WHERE results1.raceId <= results.raceId
                             AND results.driverId = results1.driverId
                             AND position IS NOT NULL
                             ORDER BY raceId DESC
                             LIMIT 3) 
-                        results2) 
-                    as avg,
-                (SELECT AVG(avg.position)
-                    FROM
-                        (SELECT position,
-                            RANK() OVER (PARTITION BY driverId ORDER BY raceId DESC) AS rnk
-                            FROM results results1
-                            WHERE results1.raceId < results.raceId
-                            AND driverId IN
-                                (SELECT driverId FROM results results2
-                                    WHERE results2.raceId = results.raceId
-                                    AND results2.driverId != results.driverId)
-                                    AND results1.position is NOT NULL)
-                    AS avg WHERE avg.rnk < 3)
+                            results2) 
+                    as avg
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
-            INNER JOIN qualifying ON qualifying.raceId=results.raceId
-                AND qualifying.driverId=results.driverId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
-                AND results.position IS NOT NULL AND results.position <= 20;"""
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+            ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_race_dataset_form_circuit(self):
+        """ Gets the circuit averages for the training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(position)
+                    FROM
+                        (SELECT position 
+                            FROM results results1
+                            INNER JOIN races races1
+                            ON races1.raceId=results1.raceId
+                            WHERE results1.raceId <= results.raceId
+                            AND results.driverId = results1.driverId
+                            AND position IS NOT NULL
+                            AND races1.circuitId=races.circuitId
+                            ORDER BY results1.raceId DESC
+                            LIMIT 3) 
+                            results2) 
+                    as avg
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+            ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_race_dataset_standings(self):
+        """ Gets the championship standings for the training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT position
+                    FROM driverStandings
+                    WHERE driverStandings.raceId=results.raceId
+                    AND driverStandings.driverId=results.driverId) 
+                    as standing,
+                (SELECT wins
+                    FROM driverStandings
+                    WHERE driverStandings.raceId=results.raceId
+                    AND driverStandings.driverId=results.driverId) 
+                    as wins
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+            ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_race_dataset_position_changes(self):
+        """ Gets the championship standings for the training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(diff)
+                    FROM
+                        (SELECT grid-position AS diff
+                            FROM results results1
+                            WHERE results1.raceId <= results.raceId
+                            AND results.driverId = results1.driverId
+                            AND position IS NOT NULL
+                            AND grid IS NOT NULL
+                            ORDER BY raceId DESC
+                            LIMIT 3) 
+                            results2) 
+                    as avg
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+            ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
 
@@ -695,38 +779,95 @@ class Database:
                         FROM
                             (SELECT position 
                                 FROM results results1
-                                WHERE results1.raceId < results.raceId
+                                WHERE results1.raceId <= results.raceId
                                 AND results.driverId = results1.driverId
                                 AND position IS NOT NULL
                                 ORDER BY raceId DESC
                                 LIMIT 3) 
                                 results2) 
                         as avg
-                FROM results WHERE raceId = %s;
+                FROM results
+                WHERE raceId = (SELECT MAX(raceId)
+                    FROM races races1
+                    WHERE races1.raceId < %s);
             """,
             (race,)
         )
         return cursor.fetchall()
 
-    def get_other_race_averages(self, race):
-        """ Fetches the last averages for the other drivers. """
+    def get_circuit_averages(self, race):
+        """ Fetches averages for driver at this circuit. """
         cursor = self.query(
             """
                 SELECT
                     driverId,
-                    (SELECT AVG(avg.position)
+                    (SELECT AVG(position)
                         FROM
-                            (SELECT position,
-                                RANK() OVER (PARTITION BY driverId ORDER BY raceId DESC) AS rnk
-                                FROM results
-                                WHERE raceId < results1.raceId
-                                AND driverId IN
-                                    (SELECT driverId FROM results
-                                        WHERE raceId = results1.raceId
-                                        AND driverId != results1.driverId)
-                                        AND position is NOT NULL)
-                                AS avg WHERE avg.rnk < 3)
-                    FROM results results1 WHERE raceId = %s;
+                            (SELECT position 
+                                FROM results results1
+                                INNER JOIN races
+                                ON races.raceId=results1.raceId
+                                WHERE results1.raceId <= results.raceId
+                                AND results.driverId = results1.driverId
+                                AND position IS NOT NULL
+                                AND races.circuitId=(SELECT circuitId
+                                    FROM races WHERE raceId = %s)
+                                ORDER BY results1.raceId DESC
+                                LIMIT 3) 
+                                results2) 
+                        as avg
+                FROM results
+                WHERE results.raceId = (SELECT MAX(raceId)
+                    FROM races races1
+                    WHERE races1.raceId < %s);
+            """,
+            (race,race)
+        )
+        return cursor.fetchall()
+
+    def get_championship_positions(self, race):
+        """ Fetches current championship positions. """
+        cursor = self.query(
+            """
+                SELECT
+                    results.driverId,
+                    driverStandings.position,
+                    driverStandings.wins
+                FROM results
+                INNER JOIN driverStandings
+                ON driverStandings.driverId=results.driverId
+                AND driverStandings.raceId=results.raceId
+                WHERE results.raceId =
+                    (SELECT MAX(raceId)
+                        FROM races
+                        WHERE raceId = %s);
+            """,
+            (race,)
+        )
+        return cursor.fetchall()
+
+    def get_position_changes(self, race):
+        """ Fetches the last averages for each driver. """
+        cursor = self.query(
+            """
+                SELECT
+                    driverId,
+                    (SELECT AVG(diff)
+                        FROM
+                            (SELECT grid-position AS diff
+                                FROM results results1
+                                WHERE results1.raceId <= results.raceId
+                                AND results.driverId = results1.driverId
+                                AND position IS NOT NULL
+                                AND grid IS NOT NULL
+                                ORDER BY raceId DESC
+                                LIMIT 3) 
+                                results2) 
+                        as avg
+                FROM results
+                WHERE raceId = (SELECT MAX(raceId)
+                    FROM races races1
+                    WHERE races1.raceId < %s);
             """,
             (race,)
         )

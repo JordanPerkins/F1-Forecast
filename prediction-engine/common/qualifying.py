@@ -148,7 +148,7 @@ def predict(race_id, disable_cache=False):
     )
 
     cached_result = db.get_qualifying_log(fe_hash)
-    if cached_result and not disable_cache:
+    if len(cached_result) > 0 and not disable_cache:
         logging.info("Result is cached in prediction log, so returning that")
         return cached_result, race_name, race_year, race
 
