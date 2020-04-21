@@ -28,7 +28,10 @@ def get_result_as_tuples(predictions, number_of_drivers):
     result = []
     for position, values in by_position.items():
         total = sum(values)
-        result.extend([(position, index, (value / total)) for index, value in enumerate(values)])
+        if total > 0:
+            result.extend([(position, index, (value / total)) for index, value in enumerate(values)])
+        else:
+            result.extend([(position, index, 0) for index, value in enumerate(values)])
     return result
 
 def results_to_ranking(predictions, number_of_drivers):
@@ -40,6 +43,7 @@ def results_to_ranking(predictions, number_of_drivers):
     tuples = get_result_as_tuples(predictions, number_of_drivers)
     while len(ranking) < number_of_drivers:
         max_tuple = max(tuples, key=lambda item: item[2])
+        print(max_tuple)
         ranked_positions.append(max_tuple[0])
         ranked_drivers.append(max_tuple[1])
         ranking.append(max_tuple)
@@ -58,7 +62,7 @@ def generate_feature_hash(race_name, qualifying_deltas, qualifying_grid):
     hash_result = hashlib.sha256(hash_string.encode()).hexdigest()
     return hash_result, hash_string
 
-def predict(race_id, disable_cache=False):
+def predict(race_id, disable_cache=False, load_model=True):
     """ Obtain a prediction for the given (or next) race. """
     race = race_id
     if race is None:
@@ -70,7 +74,7 @@ def predict(race_id, disable_cache=False):
     if len(qualifying_results) > 0:
         logging.info("Qualifying results exist for race with ID %s", str(race))
         drivers_to_predict = [list(result)[:len(result) - 2] for result in qualifying_results]
-        qualifying_grid = [int(list(result)[len(result) - 2]) for result in qualifying_results]
+        qualifying_grid = [(int(list(result)[len(result) - 2]) - 1) for result in qualifying_results]
         qualifying_deltas = replace_none_with_average([list(result)[len(result) - 1] for result in qualifying_results])
         race_name, race_year = db.get_race_by_id(race)
     else:
@@ -78,7 +82,7 @@ def predict(race_id, disable_cache=False):
         qualifying_results, race_name, race_year, _ = qualifying_predict(race)
         drivers_to_predict = [list(result)[:len(result) - 3] for result in qualifying_results]
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
-        qualifying_grid = list(range(1, len(drivers_to_predict) + 1))
+        qualifying_grid = [i for i in range(0, len(drivers_to_predict))]
 
     driver_ids = [result[0] for result in qualifying_results]
 
@@ -130,7 +134,7 @@ def predict(race_id, disable_cache=False):
         logging.warn("Result is cached in prediction log, so returning that")
         return cached_result, race_name, race_year, race
 
-    model = retrieve_race_model()
+    model = retrieve_race_model(load_model)
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
         x=features,
@@ -149,14 +153,14 @@ def predict(race_id, disable_cache=False):
 
     return driver_ranking, race_name, race_year, race
 
-def train(num_epochs=200, batch_size=50, load_model=True):
+def train(num_epochs=200, batch_size=30, load_model=True):
     last_race_id = db.get_last_race_id()
     db.mark_races_as_in_progress(last_race_id)
     training_data = db.get_race_dataset()
     model = retrieve_race_model(load_model)
 
     races = [item[0] for item in training_data]
-    grid = [item[1] for item in training_data]
+    grid = [(item[1] - 1) for item in training_data]
     qualifying = replace_none_with_average([item[2] for item in training_data])
     results = [str(item[3]) for item in training_data]
 
