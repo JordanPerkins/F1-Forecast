@@ -74,7 +74,7 @@ def predict(race_id, disable_cache=False, load_model=True):
     if len(qualifying_results) > 0:
         logging.info("Qualifying results exist for race with ID %s", str(race))
         drivers_to_predict = [list(result)[:len(result) - 2] for result in qualifying_results]
-        qualifying_grid = [(int(list(result)[len(result) - 2]) - 1) for result in qualifying_results]
+        qualifying_grid = [str(list(result)[len(result) - 2]) for result in qualifying_results]
         qualifying_deltas = replace_none_with_average([list(result)[len(result) - 1] for result in qualifying_results])
         race_name, race_year = db.get_race_by_id(race)
     else:
@@ -82,7 +82,7 @@ def predict(race_id, disable_cache=False, load_model=True):
         qualifying_results, race_name, race_year, _ = qualifying_predict(race)
         drivers_to_predict = [list(result)[:len(result) - 3] for result in qualifying_results]
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
-        qualifying_grid = [i for i in range(0, len(drivers_to_predict))]
+        qualifying_grid = [str(i) for i in range(1, len(drivers_to_predict) + 1)]
 
     driver_ids = [result[0] for result in qualifying_results]
 
@@ -101,15 +101,10 @@ def predict(race_id, disable_cache=False, load_model=True):
         for driver in driver_ids
     ])
 
-    standings_array = replace_none_with_average([
-        (standings[driver][0][0] if driver in standings else None)
+    standings_array = [
+        (str(standings[driver][0][0]) if driver in standings else '20')
         for driver in driver_ids
-    ])
-
-    wins_array = replace_none_with_average([
-        (standings[driver][0][1] if driver in standings else None)
-        for driver in driver_ids
-    ])
+    ]
 
     position_changes_array = replace_none_with_average([
         (position_changes[driver][0][0] if driver in position_changes else None)
@@ -123,8 +118,7 @@ def predict(race_id, disable_cache=False, load_model=True):
         'average_form': np.array(race_averages_array),
         'circuit_average_form': np.array(circuit_averages_array),
         'championship_standing': np.array(standings_array),
-        'position_changes': np.array(position_changes_array),
-        'wins': np.array(wins_array)
+        'position_changes': np.array(position_changes_array)
     }
 
     feature_hash, feature_string = generate_feature_hash(race_name, qualifying_deltas, qualifying_grid)
@@ -160,7 +154,7 @@ def train(num_epochs=200, batch_size=30, load_model=True):
     model = retrieve_race_model(load_model)
 
     races = [item[0] for item in training_data]
-    grid = [(item[1] - 1) for item in training_data]
+    grid = [str(item[1]) for item in training_data]
     qualifying = replace_none_with_average([item[2] for item in training_data])
     results = [str(item[3]) for item in training_data]
 
@@ -168,8 +162,7 @@ def train(num_epochs=200, batch_size=30, load_model=True):
 
         average_form = replace_none_with_average([item[0] for item in db.get_race_dataset_form()])
         circuit_average_form = replace_none_with_average([item[0] for item in db.get_race_dataset_form_circuit()])
-        standings = replace_none_with_average([item[0] for item in db.get_race_dataset_standings()])
-        wins = replace_none_with_average([item[0] for item in db.get_race_dataset_position_changes()])
+        standings = [str(item[0]) for item in db.get_race_dataset_standings()]
         position_changes = replace_none_with_average([item[0] for item in db.get_race_dataset_position_changes()])
 
         logging.info("Data received from SQL, now training")

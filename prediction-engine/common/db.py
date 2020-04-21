@@ -388,6 +388,7 @@ class Database:
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
+                AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -413,6 +414,7 @@ class Database:
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
+                AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -441,6 +443,7 @@ class Database:
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
+                AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -454,17 +457,13 @@ class Database:
                     FROM driverStandings
                     WHERE driverStandings.raceId=results.raceId
                     AND driverStandings.driverId=results.driverId) 
-                    as standing,
-                (SELECT wins
-                    FROM driverStandings
-                    WHERE driverStandings.raceId=results.raceId
-                    AND driverStandings.driverId=results.driverId) 
-                    as wins
+                    as standing
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
+                AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -491,6 +490,7 @@ class Database:
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
+                AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -831,8 +831,7 @@ class Database:
             """
                 SELECT
                     results.driverId,
-                    driverStandings.position,
-                    driverStandings.wins
+                    driverStandings.position
                 FROM results
                 INNER JOIN driverStandings
                 ON driverStandings.driverId=results.driverId

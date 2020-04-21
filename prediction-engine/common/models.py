@@ -11,19 +11,24 @@ def retrieve_race_model(load_model=True):
         sorted(Database.get_database().get_race_list())
     )
 
-    grid_feature = tf.feature_column.categorical_column_with_identity(
+    grid_feature = tf.feature_column.categorical_column_with_vocabulary_list(
         'grid',
-        19
+        [str(i) for i in range(1, 21)]
+    )
+
+    standing_feature = tf.feature_column.categorical_column_with_vocabulary_list(
+        'championship_standing',
+        [str(i) for i in range(1, 21)]
     )
 
     feature_columns = [
         tf.feature_column.numeric_column(key='qualifying'),
         tf.feature_column.numeric_column(key='average_form'),
         tf.feature_column.numeric_column(key='circuit_average_form'),
-        tf.feature_column.numeric_column(key='championship_standing'),
         tf.feature_column.numeric_column(key='position_changes'),
         tf.feature_column.indicator_column(race_feature),
-        tf.feature_column.indicator_column(grid_feature)
+        tf.feature_column.indicator_column(grid_feature),
+        tf.feature_column.indicator_column(standing_feature)
     ]
 
     model = tf.estimator.DNNClassifier(
