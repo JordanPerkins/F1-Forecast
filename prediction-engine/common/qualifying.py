@@ -44,12 +44,31 @@ def predict(race_id, disable_cache=False, load_model=True):
     logging.info('Making prediction for race with ID %s and name %s', str(race), race_name)
 
     averages_with_driver = db.get_qualifying_form_with_drivers(race)
+    averages_with_driver_dict = tuples_to_dictionary(averages_with_driver)
     drivers_to_predict = [list(result)[:len(result) - 1] for result in averages_with_driver]
     average_form = [float(list(result)[len(result) - 1]) for result in averages_with_driver]
 
+    driver_ids = [result[0] for result in averages_with_driver]
+
+    circuit_averages = tuples_to_dictionary(db.get_qualifying_form_circuit(race))
+
+    circuit_averages_array = ([
+        (float(circuit_averages[driver][0][0]) if circuit_averages[driver][0][0] is not None else float(averages_with_driver_dict[driver][0][-1]))
+        for driver in driver_ids
+    ])
+
+    championship_standing = tuples_to_dictionary(db.get_qualifying_championship_positions(race))
+
+    championship_standing_array = ([
+        (int(championship_standing[driver][0][0]) if championship_standing[driver][0][0] is not None else 20)
+        for driver in driver_ids
+    ])
+
     features = {
         'race': np.array([race_name]*len(drivers_to_predict)),
-        'average_form': np.array(average_form)
+        'average_form': np.array(average_form),
+        'circuit_average_form': np.array(circuit_averages_array),
+        'championship_standing': np.array(championship_standing_array)
     }
 
     fe_hash, fe_string = generate_feature_hash(
@@ -97,12 +116,18 @@ def train(num_epochs=200, batch_size=30, load_model=True):
     if len(races) > 0:
 
         average_form = [float(item[0]) for item in db.get_qualifying_dataset_form()]
+        circuit_average_form = [float(item[0]) if item[0] is not None else average_form[index] for index, item in enumerate(db.get_qualifying_dataset_form_circuit())]
+        championship_standing = [int(item[0]) if item[0] is not None else 20 for item in db.get_qualifying_dataset_standings()]
+
+        print(championship_standing)
 
         logging.info("Data received from SQL, now training qualifying")
 
         features = {
             'race': np.array(races),
-            'average_form': np.array(average_form)
+            'average_form': np.array(average_form),
+            'circuit_average_form': np.array(circuit_average_form),
+            'championship_standing': np.array(championship_standing)
         }
 
         train_input_fn = tf.estimator.inputs.numpy_input_fn(

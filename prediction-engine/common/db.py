@@ -479,6 +479,45 @@ class Database:
         )
         return cursor.fetchall()
 
+    def get_qualifying_dataset_form_circuit(self):
+        """ Gets the pace averages at the particular circuit for the qualifying training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            INNER JOIN races races1 ON qualifying1.raceId = races1.raceId
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.driverId = qualifying1.driverId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            AND races.circuitId=races1.circuitId
+                            ORDER BY qualifyId DESC
+                            LIMIT 3) 
+                            results2) 
+                    as avg
+            FROM races
+            INNER JOIN qualifying ON qualifying.raceId=races.raceId
+            WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
+            AND races.year >= 2000
+            AND (qualifying.q1Seconds IS NOT NULL OR qualifying.q2Seconds IS NOT NULL
+                OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY qualifying.qualifyId ASC;"""
+        )
+        return cursor.fetchall()
+
     def get_race_dataset_standings(self):
         """ Gets the championship standings for the training set. """
         cursor = self.query(
@@ -498,6 +537,27 @@ class Database:
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
+
+    def get_qualifying_dataset_standings(self):
+        """ Gets the championship standings for the qualifying training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT position
+                    FROM driverStandings
+                    WHERE driverStandings.raceId=qualifying.raceId
+                    AND driverStandings.driverId=qualifying.driverId) 
+                    as standing
+            FROM races
+                INNER JOIN qualifying ON qualifying.raceId=races.raceId
+                WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
+                AND races.year >= 2000
+                AND (qualifying.q1Seconds IS NOT NULL OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
+                ORDER BY qualifying.qualifyId ASC;"""
+        )
+        return cursor.fetchall()
+
 
     def get_race_dataset_position_changes(self):
         """ Gets the championship standings for the training set. """
@@ -889,7 +949,7 @@ class Database:
                 WHERE results.raceId =
                     (SELECT MAX(raceId)
                         FROM races
-                        WHERE raceId = %s);
+                        WHERE raceId < %s);
             """,
             (race,)
         )
@@ -957,6 +1017,66 @@ class Database:
                 FROM qualifying
                 WHERE raceId < %s);""",
             (race_id,)
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_form_circuit(self, race_id):
+        """ Gets the pace averages at the circuit for the qualifying at the given race. """
+        cursor = self.query(
+            """
+            SELECT
+                driverId,
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            INNER JOIN races ON qualifying1.raceId=races.raceId
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.driverId = qualifying1.driverId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            AND races.circuitId = (SELECT circuitId
+                                FROM races WHERE raceId = %s)
+                            ORDER BY qualifyId DESC
+                            LIMIT 3) 
+                            results2) 
+                    as avg
+            FROM qualifying
+            WHERE qualifying.raceId = (
+                SELECT MAX(raceId)
+                FROM qualifying
+                WHERE raceId < %s);""",
+            (race_id,race_id,)
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_championship_positions(self, race):
+        """ Fetches current championship positions. """
+        cursor = self.query(
+            """
+                SELECT
+                    qualifying.driverId,
+                    driverStandings.position
+                FROM qualifying
+                INNER JOIN driverStandings
+                ON driverStandings.driverId=qualifying.driverId
+                AND driverStandings.raceId=qualifying.raceId
+                WHERE qualifying.raceId =
+                    (SELECT MAX(raceId)
+                        FROM races
+                        WHERE raceId < %s);
+            """,
+            (race,)
         )
         return cursor.fetchall()
 
