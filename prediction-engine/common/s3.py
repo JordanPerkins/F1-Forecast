@@ -39,9 +39,11 @@ def fetch_race_model(load_model=True):
         return fetch_model(RACE_MODEL)
     return FILE_DIR+RACE_MODEL
 
-def fetch_qualifying_model():
+def fetch_qualifying_model(load_model=True):
     """ Returns the qualifying model. """
-    return fetch_model(QUALIFYING_MODEL)
+    if load_model:
+        return fetch_model(QUALIFYING_MODEL)
+    return FILE_DIR+QUALIFYING_MODEL
 
 def upload_race_model():
     """ Returns the race model. """

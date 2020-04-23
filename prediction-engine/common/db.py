@@ -121,48 +121,6 @@ class Database:
         )
         return cursor.fetchone()[0]
 
-    def get_previous_year_race_by_id(self, race_id):
-        """ Gets the ID of the race at the same circuit in the previous year. """
-        cursor = self.query(
-            """
-                SELECT races1.raceId
-                FROM races
-                INNER JOIN races races1 ON races1.year=races.year-1
-                    AND races1.circuitId=races.circuitId
-                WHERE races.raceId = %s;""",
-            (race_id,)
-        )
-        result = cursor.fetchone()
-        return result if result is None else result[0]
-
-    def get_qualifying_driver_replacements(
-            self,
-            driver_ids_present, previous_race_id, driver_ids_missing, current_race_id
-    ):
-        """ Tries to find ID's of missing driver in same team at previous season. """
-        cursor = self.query(
-            """
-                SELECT
-                    qualifying.driverId,
-                    qualifying1.driverId
-                FROM qualifying
-                INNER JOIN qualifying qualifying1
-                    ON qualifying.constructorId=qualifying1.constructorId
-                    AND qualifying1.raceId=%s
-                    AND qualifying1.driverId NOT IN
-                        (""" + create_list_query(driver_ids_present) + """)
-                WHERE qualifying.driverId IN
-                    (""" + create_list_query(driver_ids_missing) + """)
-                AND qualifying.raceId = %s;""",
-            (
-                (previous_race_id,) +
-                tuple(driver_ids_present) +
-                tuple(driver_ids_missing) +
-                (current_race_id,)
-            )
-        )
-        return cursor.fetchall()
-
     def get_all_laps_prior_to_race(self, race_id):
         """ Gets all qualifying results before a given race. """
         cursor = self.query(
@@ -227,7 +185,7 @@ class Database:
                     races.date
                 FROM qualifying
                 INNER JOIN races ON qualifying.raceId<races.raceId
-                ORDER NU qualifying.raceId DESC
+                ORDER BY qualifying.raceId DESC
                 LIMIT 1;"""
         )
         return cursor.fetchone()
@@ -364,6 +322,18 @@ class Database:
         )
         return cursor.rowcount
 
+    def mark_qualifiyng_as_in_progress(self, last_race_id):
+        """ Marks all untrained races as now in progress. """
+        cursor = self.query(
+            """UPDATE
+                races SET qualifyingTrained = FALSE
+            WHERE qualifyingTrained IS NULL
+                AND evaluationRace IS NOT TRUE
+                AND raceId <= %s;""",
+                (last_race_id,)
+        )
+        return cursor.rowcount
+
     def get_race_dataset(self):
         """ Gets the race dataset for training. """
         cursor = self.query(
@@ -393,6 +363,30 @@ class Database:
         )
         return cursor.fetchall()
 
+    def get_qualifying_dataset(self):
+        """ Gets the qualifying dataset for training. """
+        cursor = self.query(
+            """
+            SELECT
+                REPLACE(LOWER(races.name), ' grand prix', ''),
+                NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0),
+                    IFNULL(qualifying.q2Seconds, ~0),
+                    IFNULL(qualifying.q3Seconds, ~0))), ~0)
+                    -((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                        IFNULL(qualifying1.q2Seconds, ~0),
+                        IFNULL(qualifying1.q3Seconds, ~0)))
+                            FROM qualifying qualifying1
+                            WHERE qualifying1.raceId = qualifying.raceId))
+            FROM races
+            INNER JOIN qualifying ON qualifying.raceId=races.raceId
+            WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
+            AND races.year >= 2000
+            AND (qualifying.q1Seconds IS NOT NULL OR qualifying.q2Seconds IS NOT NULL
+                OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY qualifying.qualifyId ASC;"""
+        )
+        return cursor.fetchall()
+
     def get_race_dataset_form(self):
         """ Gets the form averages for the training set. """
         cursor = self.query(
@@ -416,6 +410,43 @@ class Database:
                 AND races.year >= 2000
                 AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_dataset_form(self):
+        """ Gets the pace averages for the qualifying training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.driverId = qualifying1.driverId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            ORDER BY qualifyId DESC
+                            LIMIT 3) 
+                            results2) 
+                    as avg
+            FROM races
+            INNER JOIN qualifying ON qualifying.raceId=races.raceId
+            WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
+            AND races.year >= 2000
+            AND (qualifying.q1Seconds IS NOT NULL OR qualifying.q2Seconds IS NOT NULL
+                OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY qualifying.qualifyId ASC;"""
         )
         return cursor.fetchall()
 
@@ -502,6 +533,17 @@ class Database:
                 UPDATE
                     races SET raceTrained = TRUE
                 WHERE raceTrained IS FALSE
+                    AND evaluationRace IS NOT TRUE;"""
+        )
+        return cursor.rowcount
+
+    def mark_qualifying_as_complete(self):
+        """ Mark all in progress races as qualifying trained. """
+        cursor = self.query(
+            """
+                UPDATE
+                    races SET qualifyingTrained = TRUE
+                WHERE qualifyingTrained IS FALSE
                     AND evaluationRace IS NOT TRUE;"""
         )
         return cursor.rowcount
@@ -769,6 +811,14 @@ class Database:
         )
         return cursor.rowcount
 
+    def mark_all_qualifying_as_untrained(self):
+        """ Marks all races as qualifying untrained. """
+        cursor = self.query(
+            """UPDATE
+                races SET qualifyingTrained = NULL;"""
+        )
+        return cursor.rowcount
+
     def get_race_averages(self, race):
         """ Fetches the last averages for each driver. """
         cursor = self.query(
@@ -869,6 +919,44 @@ class Database:
                     WHERE races1.raceId < %s);
             """,
             (race,)
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_form_with_drivers(self, race_id):
+        """ Gets the pace averages for the qualifying at the given race. """
+        cursor = self.query(
+            """
+            SELECT
+                drivers.*,
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.driverId = qualifying1.driverId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            ORDER BY qualifyId DESC
+                            LIMIT 3) 
+                            results2) 
+                    as avg
+            FROM qualifying
+            INNER JOIN drivers ON drivers.driverId = qualifying.driverId
+            WHERE qualifying.raceId = (
+                SELECT MAX(raceId)
+                FROM qualifying
+                WHERE raceId < %s);""",
+            (race_id,)
         )
         return cursor.fetchall()
 
