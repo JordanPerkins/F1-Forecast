@@ -46,16 +46,30 @@ def retrieve_race_model(load_model=True):
 
 def retrieve_qualifying_model(load_model=True):
     """ Returns the Tensorflow qualifying model. """
-    race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
+    race_feature = tf.feature_column.categorical_column_with_hash_bucket(
         'race',
-        sorted(Database.get_database().get_race_list())
+        hash_bucket_size=60
+    )
+
+    driver_feature = tf.feature_column.categorical_column_with_hash_bucket(
+        'driver',
+        hash_bucket_size=1000
+    )
+
+    constructor_feature = tf.feature_column.categorical_column_with_hash_bucket(
+        'constructor',
+        hash_bucket_size=300
     )
 
     feature_columns = [
         tf.feature_column.numeric_column(key='average_form'),
+        tf.feature_column.numeric_column(key='average_form_team'),
         tf.feature_column.numeric_column(key='circuit_average_form'),
+        tf.feature_column.numeric_column(key='circuit_average_form_team'),
         tf.feature_column.numeric_column(key='championship_standing'),
-        tf.feature_column.indicator_column(race_feature)
+        tf.feature_column.indicator_column(race_feature),
+        tf.feature_column.indicator_column(driver_feature),
+        tf.feature_column.indicator_column(constructor_feature)
     ]
 
     model = tf.estimator.DNNRegressor(

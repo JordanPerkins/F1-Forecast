@@ -376,7 +376,17 @@ class Database:
                         IFNULL(qualifying1.q2Seconds, ~0),
                         IFNULL(qualifying1.q3Seconds, ~0)))
                             FROM qualifying qualifying1
-                            WHERE qualifying1.raceId = qualifying.raceId))
+                            WHERE qualifying1.raceId = qualifying.raceId)),
+                (SELECT
+                    driverRef
+                    FROM drivers
+                    WHERE driverId=qualifying.driverId
+                ),
+                (SELECT
+                    constructorRef
+                    FROM constructors
+                    WHERE constructorId=qualifying.constructorId
+                )
             FROM races
             INNER JOIN qualifying ON qualifying.raceId=races.raceId
             WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
@@ -583,6 +593,82 @@ class Database:
                 AND races.year >= 2000
                 AND results.grid <= 20
             ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_dataset_form_team(self):
+        """ Gets the team pace averages for the qualifying training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.constructorId = qualifying1.constructorId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            ORDER BY qualifyId DESC
+                            LIMIT 6) 
+                            results2) 
+                    as avg
+            FROM races
+            INNER JOIN qualifying ON qualifying.raceId=races.raceId
+            WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
+            AND races.year >= 2000
+            AND (qualifying.q1Seconds IS NOT NULL OR qualifying.q2Seconds IS NOT NULL
+                OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY qualifying.qualifyId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_dataset_form_team_circuit(self):
+        """ Gets the circuit team pace averages for the qualifying training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            INNER JOIN races races1 ON qualifying1.raceId = races1.raceId
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.constructorId = qualifying1.constructorId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            AND races.circuitId=races1.circuitId
+                            ORDER BY qualifyId DESC
+                            LIMIT 6) 
+                            results2) 
+                    as avg
+            FROM races
+            INNER JOIN qualifying ON qualifying.raceId=races.raceId
+            WHERE qualifyingTrained is FALSE AND evaluationRace is not TRUE
+            AND races.year >= 2000
+            AND (qualifying.q1Seconds IS NOT NULL OR qualifying.q2Seconds IS NOT NULL
+                OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY qualifying.qualifyId ASC;"""
         )
         return cursor.fetchall()
 
@@ -1079,4 +1165,99 @@ class Database:
             (race,)
         )
         return cursor.fetchall()
+        
+    def get_qualifying_constructors(self, race):
+        """ Fetches current driver constructors. """
+        cursor = self.query(
+            """
+                SELECT
+                    qualifying.driverId,
+                    constructors.constructorRef
+                FROM qualifying
+                INNER JOIN constructors
+                ON constructors.constructorId=qualifying.constructorId
+                WHERE qualifying.raceId =
+                    (SELECT MAX(raceId)
+                        FROM races
+                        WHERE raceId < %s);
+            """,
+            (race,)
+        )
+        return cursor.fetchall()
 
+    def get_qualifying_form_average_team(self, race_id):
+        """ Gets the pace averages at the circuit for the qualifying at the given race. """
+        cursor = self.query(
+            """
+            SELECT
+                driverId,
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.constructorId = qualifying1.constructorId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            ORDER BY qualifyId DESC
+                            LIMIT 6) 
+                            results2) 
+                    as avg
+            FROM qualifying
+            WHERE qualifying.raceId = (
+                SELECT MAX(raceId)
+                FROM qualifying
+                WHERE raceId < %s);""",
+            (race_id,)
+        )
+        return cursor.fetchall()
+
+    def get_qualifying_form_circuit_team(self, race_id):
+        """ Gets the circuit pace averages at the circuit for the qualifying at the given race. """
+        cursor = self.query(
+            """
+            SELECT
+                driverId,
+                (SELECT AVG(delta)
+                    FROM
+                        (SELECT
+                            (NULLIF((LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                            IFNULL(qualifying1.q2Seconds, ~0),
+                            IFNULL(qualifying1.q3Seconds, ~0))), ~0)
+                            -((SELECT MIN(LEAST(IFNULL(qualifying2.q1Seconds, ~0),
+                                IFNULL(qualifying2.q2Seconds, ~0),
+                                IFNULL(qualifying2.q3Seconds, ~0)))
+                                    FROM qualifying qualifying2
+                                    WHERE qualifying2.raceId = qualifying1.raceId)))
+                                as delta
+                            FROM qualifying qualifying1
+                            INNER JOIN races ON qualifying1.raceId=races.raceId
+                            WHERE qualifying1.raceId <= qualifying.raceId
+                            AND qualifying.constructorId = qualifying1.constructorId
+                            AND (qualifying1.q1Seconds IS NOT NULL 
+                                OR qualifying1.q2Seconds IS NOT NULL
+                                OR qualifying1.q3Seconds IS NOT NULL)
+                            AND races.circuitId = (SELECT circuitId
+                                FROM races WHERE raceId = %s)
+                            ORDER BY qualifyId DESC
+                            LIMIT 6) 
+                            results2) 
+                    as avg
+            FROM qualifying
+            WHERE qualifying.raceId = (
+                SELECT MAX(raceId)
+                FROM qualifying
+                WHERE raceId < %s);""",
+            (race_id,race_id,)
+        )
+        return cursor.fetchall()

@@ -47,20 +47,31 @@ def predict(race_id, disable_cache=False, load_model=True):
     averages_with_driver_dict = tuples_to_dictionary(averages_with_driver)
     drivers_to_predict = [list(result)[:len(result) - 1] for result in averages_with_driver]
     average_form = [float(list(result)[len(result) - 1]) for result in averages_with_driver]
+    drivers = [result[1] for result in averages_with_driver]
 
     driver_ids = [result[0] for result in averages_with_driver]
 
     circuit_averages = tuples_to_dictionary(db.get_qualifying_form_circuit(race))
-
     circuit_averages_array = ([
         (float(circuit_averages[driver][0][0]) if circuit_averages[driver][0][0] is not None else float(averages_with_driver_dict[driver][0][-1]))
         for driver in driver_ids
     ])
 
     championship_standing = tuples_to_dictionary(db.get_qualifying_championship_positions(race))
-
     championship_standing_array = ([
         (int(championship_standing[driver][0][0]) if championship_standing[driver][0][0] is not None else 20)
+        for driver in driver_ids
+    ])
+
+    constructors = tuples_to_dictionary(db.get_qualifying_constructors(race))
+    constructors_array = [constructors[driver][0][0] for driver in driver_ids]
+
+    average_form_team = tuples_to_dictionary(db.get_qualifying_form_average_team(race))
+    average_form_team_array = [float(average_form_team[driver][0][0]) for driver in driver_ids]
+
+    circuit_averages_team = tuples_to_dictionary(db.get_qualifying_form_circuit_team(race))
+    circuit_averages_team_array = ([
+        (float(circuit_averages_team[driver][0][0]) if circuit_averages_team[driver][0][0] is not None else float(average_form_team[driver][0][0]))
         for driver in driver_ids
     ])
 
@@ -68,7 +79,11 @@ def predict(race_id, disable_cache=False, load_model=True):
         'race': np.array([race_name]*len(drivers_to_predict)),
         'average_form': np.array(average_form),
         'circuit_average_form': np.array(circuit_averages_array),
-        'championship_standing': np.array(championship_standing_array)
+        'championship_standing': np.array(championship_standing_array),
+        'driver': np.array(drivers),
+        'constructor': np.array(constructors_array),
+        'average_form_team': np.array(average_form_team_array),
+        'circuit_average_form_team': np.array(circuit_averages_team_array)
     }
 
     fe_hash, fe_string = generate_feature_hash(
@@ -112,12 +127,16 @@ def train(num_epochs=200, batch_size=30, load_model=True):
 
     races = [item[0] for item in training_data]
     results = [float(item[1]) for item in training_data]
+    driver = [item[2] for item in training_data]
+    constructor = [item[3] for item in training_data]
 
     if len(races) > 0:
 
         average_form = [float(item[0]) for item in db.get_qualifying_dataset_form()]
         circuit_average_form = [float(item[0]) if item[0] is not None else average_form[index] for index, item in enumerate(db.get_qualifying_dataset_form_circuit())]
         championship_standing = [int(item[0]) if item[0] is not None else 20 for item in db.get_qualifying_dataset_standings()]
+        average_form_team = [float(item[0]) for item in db.get_qualifying_dataset_form_team()]
+        circuit_average_form_team = [float(item[0]) if item[0] is not None else average_form_team[index] for index, item in enumerate(db.get_qualifying_dataset_form_team_circuit())]
 
         print(championship_standing)
 
@@ -127,7 +146,11 @@ def train(num_epochs=200, batch_size=30, load_model=True):
             'race': np.array(races),
             'average_form': np.array(average_form),
             'circuit_average_form': np.array(circuit_average_form),
-            'championship_standing': np.array(championship_standing)
+            'championship_standing': np.array(championship_standing),
+            'driver': np.array(driver),
+            'constructor':  np.array(constructor),
+            'average_form_team': np.array(average_form_team),
+            'circuit_average_form_team': np.array(circuit_average_form_team)
         }
 
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
