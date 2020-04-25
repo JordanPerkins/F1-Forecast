@@ -3,8 +3,8 @@
 import logging
 import tarfile
 import os
-import boto3
 import shutil
+import boto3
 
 QUALIFYING_MODEL = 'qualifying_model'
 RACE_MODEL = 'race_model'
@@ -54,11 +54,14 @@ def upload_qualifying_model():
     return upload_model(QUALIFYING_MODEL)
 
 def delete_model(model):
+    """ Delete the given model locally. """
     if os.path.exists(FILE_DIR+model):
         shutil.rmtree(FILE_DIR+model)
 
 def delete_race_model():
+    """ Delete the race model. """
     delete_model(RACE_MODEL)
 
 def delete_qualifying_model():
+    """ Delete the qualifying model. """
     delete_model(QUALIFYING_MODEL)

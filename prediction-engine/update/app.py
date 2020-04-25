@@ -5,7 +5,8 @@ import traceback
 from time import sleep
 from ..common.db import Database
 from .update_database import check_for_database_updates
-from .update_models import update_models
+from ..common.race import train as train_race
+from ..common.qualifying import train as train_qualifying
 
 # Intialise DB singleton
 Database()
@@ -19,7 +20,10 @@ def run_update():
         while True:
             check_for_database_updates()
             logging.info("Database updating completed, now retraining models")
-            update_models()
+            logging.info("Training race")
+            train_race()
+            logging.info("Training qualifying")
+            train_qualifying()
             logging.info("Model training completed, now pausing for 1 hour")
             sleep(60 * 60)
     except Exception as err:

@@ -6,34 +6,38 @@ from .db import Database
 
 def retrieve_race_model(load_model=True):
     """ Returns the Tensorflow race model. """
-    race_feature = tf.feature_column.categorical_column_with_vocabulary_list(
+    race_feature = tf.feature_column.categorical_column_with_hash_bucket(
         'race',
-        sorted(Database.get_database().get_race_list())
+        hash_bucket_size=60
     )
 
-    grid_feature = tf.feature_column.categorical_column_with_vocabulary_list(
-        'grid',
-        [str(i) for i in range(1, 21)]
+    driver_feature = tf.feature_column.categorical_column_with_hash_bucket(
+        'driver',
+        hash_bucket_size=1000
     )
 
-    standing_feature = tf.feature_column.categorical_column_with_vocabulary_list(
-        'championship_standing',
-        [str(i) for i in range(1, 21)]
+    constructor_feature = tf.feature_column.categorical_column_with_hash_bucket(
+        'constructor',
+        hash_bucket_size=300
     )
 
     feature_columns = [
         tf.feature_column.numeric_column(key='qualifying'),
         tf.feature_column.numeric_column(key='average_form'),
+        tf.feature_column.numeric_column(key='average_form_team'),
         tf.feature_column.numeric_column(key='circuit_average_form'),
+        tf.feature_column.numeric_column(key='circuit_average_form_team'),
         tf.feature_column.numeric_column(key='position_changes'),
+        tf.feature_column.numeric_column(key='grid'),
+        tf.feature_column.numeric_column(key='championship_standing'),
         tf.feature_column.indicator_column(race_feature),
-        tf.feature_column.indicator_column(grid_feature),
-        tf.feature_column.indicator_column(standing_feature)
+        tf.feature_column.indicator_column(driver_feature),
+        tf.feature_column.indicator_column(constructor_feature)
     ]
 
     model = tf.estimator.DNNClassifier(
         model_dir=fetch_race_model(load_model),
-        hidden_units=[50, 50],
+        hidden_units=[30, 30],
         feature_columns=feature_columns,
         n_classes=20,
         label_vocabulary=[str(i) for i in range(1, 21)],

@@ -1,10 +1,10 @@
 """ Module containing function for evaluating the network accuracy """
 
+from scipy.stats import spearmanr
 from .db import Database
 from .race import predict as race_predict
 from .qualifying import predict as qualifying_predict
 from .utils import tuples_to_dictionary
-from scipy.stats import spearmanr
 
 db = Database.get_database()
 
@@ -75,7 +75,7 @@ def evaluate(race=True, races=None, override_predictions=None):
         for position in system_ranking:
             if actual_ranking[position - 1] == position:
                 total_correct_positions += 1
-        
+
         total_positions += len(system_ranking)
         num_races += 1
 
@@ -88,4 +88,3 @@ def evaluate(race=True, races=None, override_predictions=None):
     return (percentage_winners_correct, percentage_podium_correct,
             percentage_podium_any_order_correct,
             percentage_correct_positions, average_coef, all_coef)
-

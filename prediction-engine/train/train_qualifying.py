@@ -1,5 +1,7 @@
+""" Module for running complete qualifying training. """
+
 import logging
-from ..common.qualifying import train as train
+from ..common.qualifying import train
 from ..common.db import Database
 from ..common.s3 import delete_qualifying_model
 from .utils import evaluation_comparison

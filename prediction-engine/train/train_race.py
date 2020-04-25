@@ -1,5 +1,7 @@
+""" Module for running complete race training. """
+
 import logging
-from ..common.race import train as train_race
+from ..common.race import train
 from ..common.db import Database
 from ..common.s3 import delete_race_model
 from .utils import evaluation_comparison

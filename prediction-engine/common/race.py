@@ -2,15 +2,13 @@
 
 import time
 import datetime
-import hashlib
 import logging
 import tensorflow as tf
-import math
 import numpy as np
 from .models import retrieve_race_model
 from .s3 import upload_race_model
 from .db import Database
-from .utils import replace_none_with_average, tuples_to_dictionary
+from .utils import tuples_to_dictionary, generate_feature_hash
 from .qualifying import predict as qualifying_predict
 
 db = Database.get_database()
@@ -43,7 +41,6 @@ def results_to_ranking(predictions, number_of_drivers):
     tuples = get_result_as_tuples(predictions, number_of_drivers)
     while len(ranking) < number_of_drivers:
         max_tuple = max(tuples, key=lambda item: item[2])
-        print(max_tuple)
         ranked_positions.append(max_tuple[0])
         ranked_drivers.append(max_tuple[1])
         ranking.append(max_tuple)
@@ -51,16 +48,13 @@ def results_to_ranking(predictions, number_of_drivers):
     sorted_ranking = sorted(ranking, key=lambda item: item[0])
     return sorted_ranking
 
-def generate_feature_hash(race_name, qualifying_deltas, qualifying_grid):
-    """ Generate a unique hash of the features. """
-    strings = [
-        race_name,
-        (',').join([str(delta) for delta in qualifying_deltas]),
-        (',').join([str(position) for position in qualifying_grid])
-    ]
-    hash_string = '|'.join(strings)
-    hash_result = hashlib.sha256(hash_string.encode()).hexdigest()
-    return hash_result, hash_string
+def replace_none_with_average(data, rounding=3):
+    """ Replaces none values in an array with the average of the other values. """
+    data_none_removed = [float(item) for item in data if item is not None]
+    average = 0
+    if len(data_none_removed) != 0:
+        average = round(sum(data_none_removed) / len(data_none_removed), rounding)
+    return [float(item) if item is not None else average for item in data]
 
 def predict(race_id, disable_cache=False, load_model=True):
     """ Obtain a prediction for the given (or next) race. """
@@ -73,42 +67,67 @@ def predict(race_id, disable_cache=False, load_model=True):
     qualifying_results = db.get_qualifying_results_with_driver(race)
     if len(qualifying_results) > 0:
         logging.info("Qualifying results exist for race with ID %s", str(race))
-        drivers_to_predict = [list(result)[:len(result) - 2] for result in qualifying_results]
-        qualifying_grid = [str(list(result)[len(result) - 2]) for result in qualifying_results]
+        drivers_to_predict = [list(result)[:len(result) - 3] for result in qualifying_results]
+        qualifying_grid = [int(list(result)[len(result) - 2]) for result in qualifying_results]
         qualifying_deltas = replace_none_with_average([list(result)[len(result) - 1] for result in qualifying_results])
+        constructors = [list(result)[len(result) - 3] for result in qualifying_results]
         race_name, race_year = db.get_race_by_id(race)
     else:
         logging.info("Qualifying results not available for race with ID %s, so will make prediction", str(race))
         qualifying_results, race_name, race_year, _ = qualifying_predict(race)
         drivers_to_predict = [list(result)[:len(result) - 3] for result in qualifying_results]
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
-        qualifying_grid = [str(i) for i in range(1, len(drivers_to_predict) + 1)]
+        qualifying_grid = [i for i in range(1, len(drivers_to_predict) + 1)]
+        constructors = [list(result)[len(result) - 3] for result in qualifying_results]
 
     driver_ids = [result[0] for result in qualifying_results]
+    drivers = [result[1] for result in qualifying_results]
 
     race_averages = tuples_to_dictionary(db.get_race_averages(race))
     circuit_averages = tuples_to_dictionary(db.get_circuit_averages(race))
     standings = tuples_to_dictionary(db.get_championship_positions(race))
     position_changes = tuples_to_dictionary(db.get_position_changes(race))
+    race_averages_team = tuples_to_dictionary(db.get_race_averages_team(race))
+    circuit_averages_team = tuples_to_dictionary(db.get_circuit_averages_team(race))
 
-    race_averages_array = replace_none_with_average([
-        (race_averages[driver][0][0] if driver in race_averages else None)
+    race_averages_array = [
+        (float(race_averages[driver][0][0]) if driver in race_averages
+         and race_averages[driver][0][0] is not None
+         else qualifying_grid[index])
+        for index, driver in enumerate(driver_ids)
+    ]
+
+    circuit_averages_array = ([
+        (float(circuit_averages[driver][0][0]) if driver in circuit_averages
+         and circuit_averages[driver][0][0] is not None
+         else float(race_averages_array[index]))
+        for index, driver in enumerate(driver_ids)
+    ])
+
+    championship_standing_array = ([
+        (int(standings[driver][0][0]) if driver in standings
+         and standings[driver][0][0] is not None else 20)
         for driver in driver_ids
     ])
 
-    circuit_averages_array = replace_none_with_average([
-        (circuit_averages[driver][0][0] if driver in circuit_averages else None)
-        for driver in driver_ids
-    ])
-
-    standings_array = [
-        (str(standings[driver][0][0]) if driver in standings else '20')
+    position_changes_array = [
+        (float(position_changes[driver][0][0]) if driver in position_changes
+         and position_changes[driver][0][0] is not None else 0)
         for driver in driver_ids
     ]
 
-    position_changes_array = replace_none_with_average([
-        (position_changes[driver][0][0] if driver in position_changes else None)
-        for driver in driver_ids
+    race_averages_team_array = [
+        (float(race_averages_team[driver][0][0]) if driver in race_averages_team
+         and race_averages_team[driver][0][0] is not None
+         else qualifying_grid[index])
+        for index, driver in enumerate(driver_ids)
+    ]
+
+    circuit_averages_team_array = ([
+        (float(circuit_averages_team[driver][0][0]) if driver in circuit_averages_team
+         and circuit_averages_team[driver][0][0] is not None
+         else float(race_averages_team_array[index]))
+        for index, driver in enumerate(driver_ids)
     ])
 
     features = {
@@ -116,12 +135,16 @@ def predict(race_id, disable_cache=False, load_model=True):
         'qualifying': np.array(qualifying_deltas),
         'grid': np.array(qualifying_grid),
         'average_form': np.array(race_averages_array),
+        'average_form_team': np.array(race_averages_team_array),
         'circuit_average_form': np.array(circuit_averages_array),
-        'championship_standing': np.array(standings_array),
-        'position_changes': np.array(position_changes_array)
+        'circuit_average_form_team': np.array(circuit_averages_team_array),
+        'championship_standing': np.array(championship_standing_array),
+        'position_changes': np.array(position_changes_array),
+        'driver': np.array(drivers),
+        'constructor': np.array(constructors)
     }
 
-    feature_hash, feature_string = generate_feature_hash(race_name, qualifying_deltas, qualifying_grid)
+    feature_hash, feature_string = generate_feature_hash(features)
 
     cached_result = db.get_race_log(feature_hash)
     if len(cached_result) > 0 and not disable_cache:
@@ -141,29 +164,50 @@ def predict(race_id, disable_cache=False, load_model=True):
     driver_ranking = [list(drivers_to_predict[position[1]]) for position in ranking]
 
     # Add to the log table
-    timestamp = datetime.datetime.utcfromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-    for index, driver in enumerate(driver_ranking):
-        db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string)
+    if not disable_cache:
+        timestamp = datetime.datetime.utcfromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        for index, driver in enumerate(driver_ranking):
+            db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string)
 
     return driver_ranking, race_name, race_year, race
 
 def train(num_epochs=200, batch_size=30, load_model=True):
+    """ Train race model. """
     last_race_id = db.get_last_race_id()
     db.mark_races_as_in_progress(last_race_id)
     training_data = db.get_race_dataset()
     model = retrieve_race_model(load_model)
 
     races = [item[0] for item in training_data]
-    grid = [str(item[1]) for item in training_data]
-    qualifying = replace_none_with_average([item[2] for item in training_data])
+    grid = [int(item[1]) for item in training_data]
+    qualifying = [float(item[2]) for item in training_data]
     results = [str(item[3]) for item in training_data]
+    driver = [item[4] for item in training_data]
+    constructor = [item[5] for item in training_data]
 
     if len(races) > 0:
 
-        average_form = replace_none_with_average([item[0] for item in db.get_race_dataset_form()])
-        circuit_average_form = replace_none_with_average([item[0] for item in db.get_race_dataset_form_circuit()])
-        standings = [str(item[0]) for item in db.get_race_dataset_standings()]
-        position_changes = replace_none_with_average([item[0] for item in db.get_race_dataset_position_changes()])
+        average_form = [
+            (float(item[0]) if item[0] is not None else grid[index])
+            for index, item in enumerate(db.get_race_dataset_form())
+        ]
+        circuit_average_form = [
+            (float(item[0]) if item[0] is not None else average_form[index])
+            for index, item in enumerate(db.get_race_dataset_form_circuit())
+        ]
+        standings = [int(item[0]) if item[0] is not None else 20 for item in db.get_race_dataset_standings()]
+        position_changes = [
+            (float(item[0]) if item[0] is not None else (grid[index] - int(results[index])))
+            for index, item in enumerate(db.get_race_dataset_position_changes())
+        ]
+        average_form_team = [
+            (float(item[0]) if item[0] is not None else grid[index])
+            for index, item in enumerate(db.get_race_dataset_form_team())
+        ]
+        circuit_average_form_team = [
+            (float(item[0]) if item[0] is not None else average_form_team[index])
+            for index, item in enumerate(db.get_race_dataset_form_team_circuit())
+        ]
 
         logging.info("Data received from SQL, now training")
 
@@ -173,9 +217,12 @@ def train(num_epochs=200, batch_size=30, load_model=True):
             'grid': np.array(grid),
             'average_form': np.array(average_form),
             'circuit_average_form': np.array(circuit_average_form),
+            'circuit_average_form_team': np.array(circuit_average_form_team),
             'championship_standing': np.array(standings),
-            'wins': np.array(wins),
-            'position_changes': np.array(position_changes)
+            'position_changes': np.array(position_changes),
+            'driver': np.array(driver),
+            'constructor':  np.array(constructor),
+            'average_form_team': np.array(average_form_team)
         }
 
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -194,4 +241,3 @@ def train(num_epochs=200, batch_size=30, load_model=True):
         upload_race_model()
         return True
     logging.info("Nothing to do, no races waiting for training")
-

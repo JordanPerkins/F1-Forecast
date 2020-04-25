@@ -108,3 +108,5 @@ dist
 model/
 data/
 build/
+
+*.pyc

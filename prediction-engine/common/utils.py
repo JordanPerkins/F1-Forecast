@@ -1,12 +1,6 @@
 """ A set of utility functions common to multiple modules. """
 
-def replace_none_with_average(data, rounding=3):
-    """ Replaces none values in an array with the average of the other values. """
-    data_none_removed = [float(item) for item in data if item is not None]
-    average = 0
-    if len(data_none_removed) != 0:
-        average = round(sum(data_none_removed) / len(data_none_removed), rounding)
-    return [float(item) if item is not None else average for item in data]
+import hashlib
 
 def tuples_to_dictionary(tuples):
     """ Converts tuples to a dictionary indexed on the first value. """
@@ -36,3 +30,15 @@ def ranking_to_dictionary(ranking):
             'driver_quali_result': driver_quali_result
         })
     return result
+
+def generate_feature_hash(features):
+    """ Generate a unique hash of the features. """
+    strings = [features['race'][0]]
+
+    for key, array in features.items():
+        if key is not 'race':
+            strings.append((',').join([str(item) for item in array]))
+
+    hash_string = '|'.join(strings)
+    hash_result = hashlib.sha256(hash_string.encode()).hexdigest()
+    return hash_result, hash_string

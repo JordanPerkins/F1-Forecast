@@ -92,6 +92,7 @@ class Database:
             """
                 SELECT
                     drivers.*,
+                    constructors.constructorRef,
                     qualifying.position,
                     NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0),
                         IFNULL(qualifying.q2Seconds, ~0),
@@ -103,6 +104,7 @@ class Database:
                             WHERE qualifying1.raceId = qualifying.raceId))
                 FROM qualifying
                 INNER JOIN drivers ON qualifying.driverId=drivers.driverId
+                INNER JOIN constructors ON qualifying.constructorId=constructors.constructorId
                 WHERE raceId=%s;""",
             (race_id,)
         )
@@ -318,7 +320,7 @@ class Database:
             WHERE raceTrained IS NULL
                 AND evaluationRace IS NOT TRUE
                 AND raceId <= %s;""",
-                (last_race_id,)
+            (last_race_id,)
         )
         return cursor.rowcount
 
@@ -330,7 +332,7 @@ class Database:
             WHERE qualifyingTrained IS NULL
                 AND evaluationRace IS NOT TRUE
                 AND raceId <= %s;""",
-                (last_race_id,)
+            (last_race_id,)
         )
         return cursor.rowcount
 
@@ -341,24 +343,36 @@ class Database:
             SELECT
                 REPLACE(LOWER(races.name), ' grand prix', ''),
                 results.grid,
+                NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0),
+                    IFNULL(qualifying.q2Seconds, ~0),
+                    IFNULL(qualifying.q3Seconds, ~0))), ~0)
+                    -((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0),
+                        IFNULL(qualifying1.q2Seconds, ~0),
+                        IFNULL(qualifying1.q3Seconds, ~0)))
+                            FROM qualifying qualifying1
+                            WHERE qualifying1.raceId = qualifying.raceId)),
+                results.position,
                 (SELECT
-                    NULLIF((LEAST(IFNULL(qualifying.q1Seconds, ~0),
-                        IFNULL(qualifying.q2Seconds, ~0),
-                        IFNULL(qualifying.q3Seconds, ~0))), ~0)
-                        -((SELECT MIN(LEAST(IFNULL(qualifying1.q1Seconds, ~0),
-                            IFNULL(qualifying1.q2Seconds, ~0),
-                            IFNULL(qualifying1.q3Seconds, ~0)))
-                                FROM qualifying qualifying1
-                                WHERE qualifying1.raceId = qualifying.raceId))
-                FROM qualifying WHERE qualifying.raceId = results.raceId
-                AND qualifying.driverId = results.driverId),
-                results.position
+                    driverRef
+                    FROM drivers
+                    WHERE driverId=qualifying.driverId
+                ),
+                (SELECT
+                    constructorRef
+                    FROM constructors
+                    WHERE constructorId=qualifying.constructorId
+                )
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
                 AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -404,21 +418,26 @@ class Database:
             SELECT
                 (SELECT AVG(position)
                     FROM
-                        (SELECT position 
+                        (SELECT position
                             FROM results results1
-                            WHERE results1.raceId <= results.raceId
+                            WHERE results1.raceId < results.raceId
                             AND results.driverId = results1.driverId
                             AND position IS NOT NULL
                             ORDER BY raceId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
                 AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -441,14 +460,14 @@ class Database:
                                     WHERE qualifying2.raceId = qualifying1.raceId)))
                                 as delta
                             FROM qualifying qualifying1
-                            WHERE qualifying1.raceId <= qualifying.raceId
+                            WHERE qualifying1.raceId < qualifying.raceId
                             AND qualifying.driverId = qualifying1.driverId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             ORDER BY qualifyId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM races
             INNER JOIN qualifying ON qualifying.raceId=races.raceId
@@ -467,24 +486,29 @@ class Database:
             SELECT
                 (SELECT AVG(position)
                     FROM
-                        (SELECT position 
+                        (SELECT position
                             FROM results results1
                             INNER JOIN races races1
                             ON races1.raceId=results1.raceId
-                            WHERE results1.raceId <= results.raceId
+                            WHERE results1.raceId < results.raceId
                             AND results.driverId = results1.driverId
                             AND position IS NOT NULL
                             AND races1.circuitId=races.circuitId
                             ORDER BY results1.raceId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
                 AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -508,15 +532,15 @@ class Database:
                                 as delta
                             FROM qualifying qualifying1
                             INNER JOIN races races1 ON qualifying1.raceId = races1.raceId
-                            WHERE qualifying1.raceId <= qualifying.raceId
+                            WHERE qualifying1.raceId < qualifying.raceId
                             AND qualifying.driverId = qualifying1.driverId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             AND races.circuitId=races1.circuitId
                             ORDER BY qualifyId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM races
             INNER JOIN qualifying ON qualifying.raceId=races.raceId
@@ -535,15 +559,22 @@ class Database:
             SELECT
                 (SELECT position
                     FROM driverStandings
-                    WHERE driverStandings.raceId=results.raceId
-                    AND driverStandings.driverId=results.driverId) 
+                    WHERE driverStandings.raceId<results.raceId
+                    AND driverStandings.driverId=results.driverId
+                    ORDER BY driverStandingsId DESC
+                    LIMIT 1)
                     as standing
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
                 AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -555,8 +586,10 @@ class Database:
             SELECT
                 (SELECT position
                     FROM driverStandings
-                    WHERE driverStandings.raceId=qualifying.raceId
-                    AND driverStandings.driverId=qualifying.driverId) 
+                    WHERE driverStandings.raceId<qualifying.raceId
+                    AND driverStandings.driverId=qualifying.driverId
+                    ORDER BY driverStandingsId DESC
+                    LIMIT 1)
                     as standing
             FROM races
                 INNER JOIN qualifying ON qualifying.raceId=races.raceId
@@ -578,20 +611,90 @@ class Database:
                     FROM
                         (SELECT grid-position AS diff
                             FROM results results1
-                            WHERE results1.raceId <= results.raceId
+                            WHERE results1.raceId < results.raceId
                             AND results.driverId = results1.driverId
                             AND position IS NOT NULL
                             AND grid IS NOT NULL
                             ORDER BY raceId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM races
             INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
             WHERE raceTrained is FALSE AND evaluationRace is not TRUE
                 AND results.position IS NOT NULL AND results.position <= 20
                 AND races.year >= 2000
                 AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_race_dataset_form_team(self):
+        """ Gets the form averages for the team for the training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(position)
+                    FROM
+                        (SELECT position
+                            FROM results results1
+                            WHERE results1.raceId < results.raceId
+                            AND results.constructorId = results1.constructorId
+                            AND position IS NOT NULL
+                            ORDER BY raceId DESC
+                            LIMIT 6)
+                            results2)
+                    as avg
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+                AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY results.resultId ASC;"""
+        )
+        return cursor.fetchall()
+
+    def get_race_dataset_form_team_circuit(self):
+        """ Gets the team circuit averages for the training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(position)
+                    FROM
+                        (SELECT position
+                            FROM results results1
+                            INNER JOIN races races1
+                            ON races1.raceId=results1.raceId
+                            WHERE results1.raceId < results.raceId
+                            AND results.constructorId = results1.constructorId
+                            AND position IS NOT NULL
+                            AND races1.circuitId=races.circuitId
+                            ORDER BY results1.raceId DESC
+                            LIMIT 6)
+                            results2)
+                    as avg
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+                AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
         return cursor.fetchall()
@@ -614,14 +717,14 @@ class Database:
                                     WHERE qualifying2.raceId = qualifying1.raceId)))
                                 as delta
                             FROM qualifying qualifying1
-                            WHERE qualifying1.raceId <= qualifying.raceId
+                            WHERE qualifying1.raceId < qualifying.raceId
                             AND qualifying.constructorId = qualifying1.constructorId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             ORDER BY qualifyId DESC
-                            LIMIT 6) 
-                            results2) 
+                            LIMIT 6)
+                            results2)
                     as avg
             FROM races
             INNER JOIN qualifying ON qualifying.raceId=races.raceId
@@ -652,15 +755,15 @@ class Database:
                                 as delta
                             FROM qualifying qualifying1
                             INNER JOIN races races1 ON qualifying1.raceId = races1.raceId
-                            WHERE qualifying1.raceId <= qualifying.raceId
+                            WHERE qualifying1.raceId < qualifying.raceId
                             AND qualifying.constructorId = qualifying1.constructorId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             AND races.circuitId=races1.circuitId
                             ORDER BY qualifyId DESC
-                            LIMIT 6) 
-                            results2) 
+                            LIMIT 6)
+                            results2)
                     as avg
             FROM races
             INNER JOIN qualifying ON qualifying.raceId=races.raceId
@@ -856,14 +959,14 @@ class Database:
             (feature_hash,))
         return cursor.fetchall()
 
-    def insert_qualifying_log(self, driver_id, position, feature_hash, time, delta, feature_string):
+    def insert_qualifying_log(self, driver_id, constructor_id, position, feature_hash, time, delta, feature_string):
         """ Insert a result into the qualifying prediction log. """
         cursor = self.query(
             """
                 INSERT INTO qualifyingPredictionLog
-                    (driverId, position, featureHash, time, delta, features)
-                    VALUES (%s, %s, %s, %s, %s, %s);""",
-            (driver_id, position, feature_hash, time, delta, feature_string)
+                    (driverId, constructorId, position, featureHash, time, delta, features)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s);""",
+            (driver_id, constructor_id, position, feature_hash, time, delta, feature_string)
         )
         self.database.commit()
         return cursor.rowcount
@@ -874,9 +977,13 @@ class Database:
             """
                 SELECT
                     drivers.*,
+                    constructors.constructorRef,
+                    constructors.constructorId,
                     delta
                 FROM qualifyingPredictionLog
                 INNER JOIN drivers ON drivers.driverId=qualifyingPredictionLog.driverId
+                INNER JOIN constructors ON
+                constructors.constructorId=qualifyingPredictionLog.constructorId
                 WHERE featureHash = %s AND time >= (NOW() - INTERVAL 2 WEEK)
                 ORDER BY position ASC;""",
             (feature_hash,)
@@ -973,14 +1080,40 @@ class Database:
                     driverId,
                     (SELECT AVG(position)
                         FROM
-                            (SELECT position 
+                            (SELECT position
                                 FROM results results1
                                 WHERE results1.raceId <= results.raceId
                                 AND results.driverId = results1.driverId
                                 AND position IS NOT NULL
                                 ORDER BY raceId DESC
-                                LIMIT 3) 
-                                results2) 
+                                LIMIT 3)
+                                results2)
+                        as avg
+                FROM results
+                WHERE raceId = (SELECT MAX(raceId)
+                    FROM races races1
+                    WHERE races1.raceId < %s);
+            """,
+            (race,)
+        )
+        return cursor.fetchall()
+
+    def get_race_averages_team(self, race):
+        """ Fetches the last averages for each driver based on team. """
+        cursor = self.query(
+            """
+                SELECT
+                    driverId,
+                    (SELECT AVG(position)
+                        FROM
+                            (SELECT position
+                                FROM results results1
+                                WHERE results1.raceId <= results.raceId
+                                AND results.constructorId = results1.constructorId
+                                AND position IS NOT NULL
+                                ORDER BY raceId DESC
+                                LIMIT 3)
+                                results2)
                         as avg
                 FROM results
                 WHERE raceId = (SELECT MAX(raceId)
@@ -999,7 +1132,7 @@ class Database:
                     driverId,
                     (SELECT AVG(position)
                         FROM
-                            (SELECT position 
+                            (SELECT position
                                 FROM results results1
                                 INNER JOIN races
                                 ON races.raceId=results1.raceId
@@ -1009,15 +1142,45 @@ class Database:
                                 AND races.circuitId=(SELECT circuitId
                                     FROM races WHERE raceId = %s)
                                 ORDER BY results1.raceId DESC
-                                LIMIT 3) 
-                                results2) 
+                                LIMIT 3)
+                                results2)
                         as avg
                 FROM results
                 WHERE results.raceId = (SELECT MAX(raceId)
                     FROM races races1
                     WHERE races1.raceId < %s);
             """,
-            (race,race)
+            (race, race)
+        )
+        return cursor.fetchall()
+
+    def get_circuit_averages_team(self, race):
+        """ Fetches averages for driver at this circuit per team. """
+        cursor = self.query(
+            """
+                SELECT
+                    driverId,
+                    (SELECT AVG(position)
+                        FROM
+                            (SELECT position
+                                FROM results results1
+                                INNER JOIN races
+                                ON races.raceId=results1.raceId
+                                WHERE results1.raceId <= results.raceId
+                                AND results.constructorId = results1.constructorId
+                                AND position IS NOT NULL
+                                AND races.circuitId=(SELECT circuitId
+                                    FROM races WHERE raceId = %s)
+                                ORDER BY results1.raceId DESC
+                                LIMIT 6)
+                                results2)
+                        as avg
+                FROM results
+                WHERE results.raceId = (SELECT MAX(raceId)
+                    FROM races races1
+                    WHERE races1.raceId < %s);
+            """,
+            (race, race)
         )
         return cursor.fetchall()
 
@@ -1056,8 +1219,8 @@ class Database:
                                 AND position IS NOT NULL
                                 AND grid IS NOT NULL
                                 ORDER BY raceId DESC
-                                LIMIT 3) 
-                                results2) 
+                                LIMIT 3)
+                                results2)
                         as avg
                 FROM results
                 WHERE raceId = (SELECT MAX(raceId)
@@ -1074,6 +1237,8 @@ class Database:
             """
             SELECT
                 drivers.*,
+                constructors.constructorRef,
+                constructors.constructorId,
                 (SELECT AVG(delta)
                     FROM
                         (SELECT
@@ -1089,15 +1254,16 @@ class Database:
                             FROM qualifying qualifying1
                             WHERE qualifying1.raceId <= qualifying.raceId
                             AND qualifying.driverId = qualifying1.driverId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             ORDER BY qualifyId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM qualifying
             INNER JOIN drivers ON drivers.driverId = qualifying.driverId
+            INNER JOIN constructors ON constructors.constructorId=qualifying.constructorId
             WHERE qualifying.raceId = (
                 SELECT MAX(raceId)
                 FROM qualifying
@@ -1128,21 +1294,21 @@ class Database:
                             INNER JOIN races ON qualifying1.raceId=races.raceId
                             WHERE qualifying1.raceId <= qualifying.raceId
                             AND qualifying.driverId = qualifying1.driverId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             AND races.circuitId = (SELECT circuitId
                                 FROM races WHERE raceId = %s)
                             ORDER BY qualifyId DESC
-                            LIMIT 3) 
-                            results2) 
+                            LIMIT 3)
+                            results2)
                     as avg
             FROM qualifying
             WHERE qualifying.raceId = (
                 SELECT MAX(raceId)
                 FROM qualifying
                 WHERE raceId < %s);""",
-            (race_id,race_id,)
+            (race_id, race_id,)
         )
         return cursor.fetchall()
 
@@ -1157,25 +1323,6 @@ class Database:
                 INNER JOIN driverStandings
                 ON driverStandings.driverId=qualifying.driverId
                 AND driverStandings.raceId=qualifying.raceId
-                WHERE qualifying.raceId =
-                    (SELECT MAX(raceId)
-                        FROM races
-                        WHERE raceId < %s);
-            """,
-            (race,)
-        )
-        return cursor.fetchall()
-        
-    def get_qualifying_constructors(self, race):
-        """ Fetches current driver constructors. """
-        cursor = self.query(
-            """
-                SELECT
-                    qualifying.driverId,
-                    constructors.constructorRef
-                FROM qualifying
-                INNER JOIN constructors
-                ON constructors.constructorId=qualifying.constructorId
                 WHERE qualifying.raceId =
                     (SELECT MAX(raceId)
                         FROM races
@@ -1206,12 +1353,12 @@ class Database:
                             FROM qualifying qualifying1
                             WHERE qualifying1.raceId <= qualifying.raceId
                             AND qualifying.constructorId = qualifying1.constructorId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             ORDER BY qualifyId DESC
-                            LIMIT 6) 
-                            results2) 
+                            LIMIT 6)
+                            results2)
                     as avg
             FROM qualifying
             WHERE qualifying.raceId = (
@@ -1244,20 +1391,20 @@ class Database:
                             INNER JOIN races ON qualifying1.raceId=races.raceId
                             WHERE qualifying1.raceId <= qualifying.raceId
                             AND qualifying.constructorId = qualifying1.constructorId
-                            AND (qualifying1.q1Seconds IS NOT NULL 
+                            AND (qualifying1.q1Seconds IS NOT NULL
                                 OR qualifying1.q2Seconds IS NOT NULL
                                 OR qualifying1.q3Seconds IS NOT NULL)
                             AND races.circuitId = (SELECT circuitId
                                 FROM races WHERE raceId = %s)
                             ORDER BY qualifyId DESC
-                            LIMIT 6) 
-                            results2) 
+                            LIMIT 6)
+                            results2)
                     as avg
             FROM qualifying
             WHERE qualifying.raceId = (
                 SELECT MAX(raceId)
                 FROM qualifying
                 WHERE raceId < %s);""",
-            (race_id,race_id,)
+            (race_id, race_id,)
         )
         return cursor.fetchall()

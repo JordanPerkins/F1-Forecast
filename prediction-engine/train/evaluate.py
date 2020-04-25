@@ -1,3 +1,5 @@
+""" Module for running evaluations for both models. """
+
 import logging
 from .utils import evaluation_comparison
 
