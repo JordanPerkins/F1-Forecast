@@ -30,8 +30,9 @@ def fetch_model(model):
 def upload_model(model):
     """ Attempts to upload the model with the given name. """
     with tarfile.open(FILE_DIR+model+'.tar.gz', "w:gz") as tar_handle:
-        tar_handle.add(FILE_DIR+model)
+        tar_handle.add(FILE_DIR+model, model)
     s3.upload_file(FILE_DIR+model+'.tar.gz', BUCKET, model+'.tar.gz')
+    logging.info('Successfully uploaded model %s to S3', model)
 
 def fetch_race_model(load_model=True):
     """ Returns the race model. """
@@ -65,3 +66,4 @@ def delete_race_model():
 def delete_qualifying_model():
     """ Delete the qualifying model. """
     delete_model(QUALIFYING_MODEL)
+
