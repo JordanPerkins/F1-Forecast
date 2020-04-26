@@ -34,6 +34,7 @@ class Database:
                 host=SQL_HOST,
                 database=SQL_DATABASE
             )
+            self.database.autocommit = True
             logging.debug("Successfully opened MySQL connection")
         except mysql.Error as err:
             logging.error("Could not connect to database: %s", str(err))
