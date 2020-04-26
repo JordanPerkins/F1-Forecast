@@ -29,6 +29,10 @@ def predict(race_id, disable_cache=False, load_model=True):
         race = db.get_next_race_year_round_qualifying()[2]
 
     race_name, race_year = db.get_race_by_id(race)
+    cached_result = db.get_qualifying_log(race)
+    if len(cached_result) > 0 and not disable_cache:
+        logging.info("Result is cached in prediction log, so returning that")
+        return cached_result, race_name, race_year, race
 
     logging.info('Making prediction for race with ID %s and name %s', str(race), race_name)
 
@@ -78,11 +82,6 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     fe_hash, fe_string = generate_feature_hash(features)
 
-    cached_result = db.get_qualifying_log(fe_hash)
-    if len(cached_result) > 0 and not disable_cache:
-        logging.info("Result is cached in prediction log, so returning that")
-        return cached_result, race_name, race_year, race
-
     model = retrieve_qualifying_model(load_model)
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -104,7 +103,10 @@ def predict(race_id, disable_cache=False, load_model=True):
     if not disable_cache:
         timestamp = datetime.utcfromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         for index, driver in enumerate(driver_ranking):
-            db.insert_qualifying_log(driver[0], driver[-2], (index + 1), fe_hash, timestamp, driver[-1], fe_string)
+            db.insert_qualifying_log(
+                race, driver[0], driver[-2], (index + 1),
+                fe_hash, timestamp, driver[-1], fe_string
+            )
 
     return driver_ranking, race_name, race_year, race
 

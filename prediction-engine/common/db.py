@@ -935,44 +935,58 @@ class Database:
         )
         return cursor.fetchall()
 
-    def insert_race_log(self, driver_id, position, feature_hash, time, feature_string):
+    def insert_race_log(
+            self,
+            race_id, driver_id, position, feature_hash,
+            time, feature_string, qualifying_predicted
+    ):
         """ Insert a result into the race prediction log. """
         cursor = self.query(
             """
             INSERT INTO racePredictionLog
-                (driverId, position, featureHash, time, features)
-                VALUES (%s, %s, %s, %s, %s);""",
-            (driver_id, position, feature_hash, time, feature_string)
+                (raceId, driverId, position, featureHash, time, features, qualifyingPredicted)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);""",
+            (
+                race_id, driver_id, position, feature_hash,
+                time, feature_string, qualifying_predicted
+            )
         )
         self.database.commit()
         return cursor.rowcount
 
-    def get_race_log(self, feature_hash):
-        """ Fetch a result from the log, using feature hash. """
+    def get_race_log(self, race_id, qualifying_predicted):
+        """ Fetch a result from the log, using race id. """
         cursor = self.query(
             """
                 SELECT drivers.*
                 FROM racePredictionLog
                 INNER JOIN drivers ON drivers.driverId=racePredictionLog.driverId
-                WHERE featureHash = %s AND time >= (NOW() - INTERVAL 2 WEEK)
+                WHERE raceId = %s AND time >= (NOW() - INTERVAL 2 WEEK)
+                AND qualifyingPredicted = %s
                 ORDER BY position ASC;""",
-            (feature_hash,))
+            (race_id, qualifying_predicted,))
         return cursor.fetchall()
 
-    def insert_qualifying_log(self, driver_id, constructor_id, position, feature_hash, time, delta, feature_string):
+    def insert_qualifying_log(
+            self, race_id, driver_id, constructor_id,
+            position, feature_hash, time, delta, feature_string
+    ):
         """ Insert a result into the qualifying prediction log. """
         cursor = self.query(
             """
                 INSERT INTO qualifyingPredictionLog
-                    (driverId, constructorId, position, featureHash, time, delta, features)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s);""",
-            (driver_id, constructor_id, position, feature_hash, time, delta, feature_string)
+                    (raceId, driverId, constructorId, position, featureHash, time, delta, features)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
+            (
+                race_id, driver_id, constructor_id, position,
+                feature_hash, time, delta, feature_string
+            )
         )
         self.database.commit()
         return cursor.rowcount
 
-    def get_qualifying_log(self, feature_hash):
-        """ Fetch a result from the log, using feature hash. """
+    def get_qualifying_log(self, race_id):
+        """ Fetch a result from the log, using race_id. """
         cursor = self.query(
             """
                 SELECT
@@ -984,9 +998,9 @@ class Database:
                 INNER JOIN drivers ON drivers.driverId=qualifyingPredictionLog.driverId
                 INNER JOIN constructors ON
                 constructors.constructorId=qualifyingPredictionLog.constructorId
-                WHERE featureHash = %s AND time >= (NOW() - INTERVAL 2 WEEK)
+                WHERE raceId = %s AND time >= (NOW() - INTERVAL 2 WEEK)
                 ORDER BY position ASC;""",
-            (feature_hash,)
+            (race_id,)
         )
         return cursor.fetchall()
 

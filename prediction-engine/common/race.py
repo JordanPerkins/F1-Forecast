@@ -72,6 +72,7 @@ def predict(race_id, disable_cache=False, load_model=True):
         qualifying_deltas = replace_none_with_average([list(result)[len(result) - 1] for result in qualifying_results])
         constructors = [list(result)[len(result) - 3] for result in qualifying_results]
         race_name, race_year = db.get_race_by_id(race)
+        qualifying_predicted = False
     else:
         logging.info("Qualifying results not available for race with ID %s, so will make prediction", str(race))
         qualifying_results, race_name, race_year, _ = qualifying_predict(race)
@@ -79,6 +80,12 @@ def predict(race_id, disable_cache=False, load_model=True):
         qualifying_deltas = [list(result)[len(result) - 1] for result in qualifying_results]
         qualifying_grid = [i for i in range(1, len(drivers_to_predict) + 1)]
         constructors = [list(result)[len(result) - 3] for result in qualifying_results]
+        qualifying_predicted = True
+
+    cached_result = db.get_race_log(race, qualifying_predicted)
+    if len(cached_result) > 0 and not disable_cache:
+        logging.warn("Result is cached in prediction log, so returning that")
+        return cached_result, race_name, race_year, race
 
     driver_ids = [result[0] for result in qualifying_results]
     drivers = [result[1] for result in qualifying_results]
@@ -146,11 +153,6 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     feature_hash, feature_string = generate_feature_hash(features)
 
-    cached_result = db.get_race_log(feature_hash)
-    if len(cached_result) > 0 and not disable_cache:
-        logging.warn("Result is cached in prediction log, so returning that")
-        return cached_result, race_name, race_year, race
-
     model = retrieve_race_model(load_model)
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -167,7 +169,10 @@ def predict(race_id, disable_cache=False, load_model=True):
     if not disable_cache:
         timestamp = datetime.datetime.utcfromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         for index, driver in enumerate(driver_ranking):
-            db.insert_race_log(driver[0], (index + 1), feature_hash, timestamp, feature_string)
+            db.insert_race_log(
+                race, driver[0], (index + 1), feature_hash,
+                timestamp, feature_string, qualifying_predicted
+            )
 
     return driver_ranking, race_name, race_year, race
 
