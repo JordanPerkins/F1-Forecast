@@ -1,5 +1,7 @@
 mv update/Dockerfile .
-mv update/elasticbeanstalk .
-eb deploy dev2
+mv update/.elasticbeanstalk .
+mv update/cron.yaml .
+eb deploy $1
 mv Dockerfile update
 mv .elasticbeanstalk update
+mv cron.yaml update

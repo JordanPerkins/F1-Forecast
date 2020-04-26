@@ -4,7 +4,7 @@ import logging
 from gevent.pywsgi import WSGIServer
 from .app import application
 
-PORT = 5000
+PORT = 80
 
 logging.info("Application starting on port %i", PORT)
 

@@ -2,7 +2,7 @@
 
 import logging
 import traceback
-from time import sleep
+from flask import Flask
 from ..common.db import Database
 from .update_database import check_for_database_updates
 from ..common.race import train as train_race
@@ -15,21 +15,21 @@ logging.basicConfig()
 logging.root.setLevel(logging.NOTSET)
 
 def run_update():
-    """ Handles continuous updating. """
     try:
-        while True:
-            check_for_database_updates()
-            logging.info("Database updating completed, now retraining models")
-            logging.info("Training race")
-            train_race()
-            logging.info("Training qualifying")
-            train_qualifying()
-            logging.info("Model training completed, now pausing for 1 hour")
-            sleep(60 * 60)
+        check_for_database_updates()
+        logging.info("Database updating completed, now retraining models")
+        logging.info("Training race")
+        train_race(num_epochs=10)
+        logging.info("Training qualifying")
+        train_qualifying(num_epochs=10)
+        logging.info("Model training completed, now pausing for 1 hour")
+        return 'Done'
     except Exception as err:
         logging.error('An error occurred during the update process: %s', str(err))
         logging.debug(traceback.format_exc())
+        abort(500, description="Internal Server Error")
 
+application = Flask(__name__)
 
-if __name__ == '__main__':
-    run_update()
+application.add_url_rule('/', None, run_update, methods=['POST'])
+application.add_url_rule('/scheduled', None, run_update, methods=['POST'])
