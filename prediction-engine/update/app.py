@@ -2,7 +2,7 @@
 
 import logging
 import traceback
-from flask import Flask
+from flask import Flask, abort
 from ..common.db import Database
 from .update_database import check_for_database_updates
 from ..common.race import train as train_race
@@ -15,6 +15,7 @@ logging.basicConfig()
 logging.root.setLevel(logging.NOTSET)
 
 def run_update():
+    """ Update the datbase and hthen models. """
     try:
         check_for_database_updates()
         logging.info("Database updating completed, now retraining models")
@@ -22,7 +23,7 @@ def run_update():
         train_race(num_epochs=10)
         logging.info("Training qualifying")
         train_qualifying(num_epochs=10)
-        logging.info("Model training completed, now pausing for 1 hour")
+        logging.info("Model training completed, now pausing until next run")
         return 'Done'
     except Exception as err:
         logging.error('An error occurred during the update process: %s', str(err))
