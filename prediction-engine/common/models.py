@@ -37,7 +37,7 @@ def retrieve_race_model(load_model=True):
 
     model = tf.estimator.DNNClassifier(
         model_dir=fetch_race_model(load_model),
-        hidden_units=[30, 30],
+        hidden_units=[50, 50],
         feature_columns=feature_columns,
         n_classes=20,
         label_vocabulary=[str(i) for i in range(1, 21)],
