@@ -58,33 +58,15 @@ class Database:
             self.connect()
             Database.__instance = self
 
-    def get_race_list(self):
-        """ Gets full list of races for use in the model. """
-        cursor = self.query(
-            "SELECT DISTINCT REPLACE(LOWER(name), ' grand prix', '') FROM races ORDER BY raceId;"
-        )
-        result = cursor.fetchall()
-        return [item[0] for item in result]
-
     def get_race_by_id(self, race_id):
         """ Gets the name of a race using the ID. """
         cursor = self.query(
             "SELECT REPLACE(LOWER(name), ' grand prix', ''), year FROM races WHERE raceId = %s;",
             (race_id,)
         )
-        return cursor.fetchone()
-
-    def get_drivers_in_race(self, race_id):
-        """ Gets the info of a driver that participated in a given race. """
-        cursor = self.query(
-            """
-                SELECT drivers.*
-                FROM results
-                INNER JOIN drivers ON results.driverId=drivers.driverId
-                WHERE results.raceId=%s;""",
-            (race_id,)
-        )
-        return cursor.fetchall()
+        result = cursor.fetchone()
+        cursor.close()
+        return result
 
     def get_qualifying_results_with_driver(self, race_id):
         """ Gets driver info as well as qualifying delta result for given race. """
@@ -108,55 +90,9 @@ class Database:
                 WHERE raceId=%s;""",
             (race_id,)
         )
-        return cursor.fetchall()
-
-    def get_qualifying_fastest_lap(self, race_id):
-        """ Gets the fastest lap in qualifying for a given race. """
-        cursor = self.query(
-            """
-            SELECT
-                MIN(LEAST(IFNULL(q1Seconds, ~0),
-                    IFNULL(q2Seconds, ~0),
-                    IFNULL(q3Seconds, ~0)))
-            FROM qualifying WHERE raceId = %s;""",
-            (race_id,)
-        )
-        return cursor.fetchone()[0]
-
-    def get_all_laps_prior_to_race(self, race_id):
-        """ Gets all qualifying results before a given race. """
-        cursor = self.query(
-            """
-                SELECT
-                    qualifying.driverId,
-                    races1.circuitId,
-                    COALESCE(NULLIF(qualifying.q3, ''),
-                        NULLIF(qualifying.q2, ''),
-                        NULLIF(qualifying.q1, ''))
-                FROM races
-                INNER JOIN races races1 ON races1.year=races.year
-                INNER JOIN qualifying ON qualifying.raceId=races1.raceId
-                WHERE races.raceId = %s AND races1.raceId<races.raceId;""",
-            (race_id,)
-        )
-        return cursor.fetchall()
-
-    def get_laps_in_prior_season_to_race(self, race_id):
-        """ Gets all laps in the season before the given race. """
-        cursor = self.query(
-            """
-                SELECT
-                    CONCAT(qualifying.driverId,races1.circuitId),
-                    COALESCE(NULLIF(qualifying.q3, ''),
-                        NULLIF(qualifying.q2, ''),
-                        NULLIF(qualifying.q1, ''))
-                FROM races
-                INNER JOIN races races1 ON races1.year=races.year-1
-                INNER JOIN qualifying ON qualifying.raceId=races1.raceId
-                WHERE races.raceId = %s;""",
-            (race_id,)
-        )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_next_race_year_round(self):
         """ Gets the race ID, round, date and year for the
@@ -173,7 +109,9 @@ class Database:
                 ORDER by results.raceId DESC
                 LIMIT 1;"""
         )
-        return cursor.fetchone()
+        result = cursor.fetchone()
+        cursor.close()
+        return result
 
     def get_next_race_year_round_qualifying(self):
         """ Gets the race ID, round, date and year for the
@@ -190,17 +128,23 @@ class Database:
                 ORDER BY qualifying.raceId DESC
                 LIMIT 1;"""
         )
-        return cursor.fetchone()
+        result = cursor.fetchone()
+        cursor.close()
+        return result
 
     def get_driver_references(self):
         """ Get a list of driver references with corresponding ID's. """
         cursor = self.query("SELECT driverRef, driverId FROM drivers;")
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_constructor_references(self):
         """ Get a list of constructor references with corresponding ID's. """
         cursor = self.query("SELECT constructorRef, constructorId FROM constructors;")
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def insert_driver(self, driver_ref, number, code, forename, surname, dob, nationality, url):
         """ Insert a new driver with the provided information. """
@@ -212,7 +156,9 @@ class Database:
             (driver_ref, number, code, forename, surname, dob, nationality, url)
         )
         self.database.commit()
-        return cursor.lastrowid
+        result = cursor.lastrowid
+        cursor.close()
+        return result
 
     def insert_constructor(self, constructor_ref, name, nationality, url):
         """ Insert a new constructor with the provided information. """
@@ -224,7 +170,10 @@ class Database:
             (constructor_ref, name, nationality, url)
         )
         self.database.commit()
-        return cursor.lastrowid
+        result = cursor.lastrowid
+        cursor.close()
+        return result
+
 
     def insert_result(
             self,
@@ -251,7 +200,9 @@ class Database:
             )
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def insert_qualifying(
             self,
@@ -271,17 +222,23 @@ class Database:
             )
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_next_missing_season(self):
         """ Gets the next season year which requires a calendar. """
         cursor = self.query("SELECT MAX(year)+1 FROM races;")
-        return cursor.fetchone()[0]
+        result = cursor.fetchone()[0]
+        cursor.close()
+        return result
 
     def get_circuit_references(self):
         """ Gets a list of circuit references with corresponding ID's. """
         cursor = self.query("SELECT circuitRef, circuitId FROM circuits;")
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def insert_circuit(self, circuit_ref, circuit_name, locality, country, lat, lng, url):
         """ Insert a new circuit with the provided information. """
@@ -293,7 +250,9 @@ class Database:
             (circuit_ref, circuit_name, locality, country, lat, lng, url)
         )
         self.database.commit()
-        return cursor.lastrowid
+        result = cursor.lastrowid
+        cursor.close()
+        return result
 
     def insert_race(self, year, round_num, circuit_id, name, date, time, url):
         """ Insert a new race with the provided information. """
@@ -305,12 +264,16 @@ class Database:
             (year, round_num, circuit_id, name, date, time, url)
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def delete_race(self, race_id):
         """ Deletes the race with the given ID. """
         cursor = self.query("DELETE FROM races WHERE raceId = %s", (race_id,))
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def mark_races_as_in_progress(self, last_race_id):
         """ Marks all untrained races as now in progress. """
@@ -322,9 +285,11 @@ class Database:
                 AND raceId <= %s;""",
             (last_race_id,)
         )
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
-    def mark_qualifiyng_as_in_progress(self, last_race_id):
+    def mark_qualifying_as_in_progress(self, last_race_id):
         """ Marks all untrained races as now in progress. """
         cursor = self.query(
             """UPDATE
@@ -334,7 +299,9 @@ class Database:
                 AND raceId <= %s;""",
             (last_race_id,)
         )
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_race_dataset(self):
         """ Gets the race dataset for training. """
@@ -375,7 +342,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_dataset(self):
         """ Gets the qualifying dataset for training. """
@@ -409,7 +378,9 @@ class Database:
                 OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY qualifying.qualifyId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_dataset_form(self):
         """ Gets the form averages for the training set. """
@@ -440,7 +411,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_dataset_form(self):
         """ Gets the pace averages for the qualifying training set. """
@@ -477,7 +450,9 @@ class Database:
                 OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY qualifying.qualifyId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_dataset_form_circuit(self):
         """ Gets the circuit averages for the training set. """
@@ -511,7 +486,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_dataset_form_circuit(self):
         """ Gets the pace averages at the particular circuit for the qualifying training set. """
@@ -550,7 +527,9 @@ class Database:
                 OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY qualifying.qualifyId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_dataset_standings(self):
         """ Gets the championship standings for the training set. """
@@ -577,7 +556,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_dataset_standings(self):
         """ Gets the championship standings for the qualifying training set. """
@@ -599,7 +580,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
                 ORDER BY qualifying.qualifyId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
 
     def get_race_dataset_position_changes(self):
@@ -632,7 +615,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_dataset_form_team(self):
         """ Gets the form averages for the team for the training set. """
@@ -663,7 +648,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_dataset_form_team_circuit(self):
         """ Gets the team circuit averages for the training set. """
@@ -697,7 +684,9 @@ class Database:
                     OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY results.resultId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_dataset_form_team(self):
         """ Gets the team pace averages for the qualifying training set. """
@@ -734,7 +723,9 @@ class Database:
                 OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY qualifying.qualifyId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_dataset_form_team_circuit(self):
         """ Gets the circuit team pace averages for the qualifying training set. """
@@ -773,7 +764,9 @@ class Database:
                 OR qualifying.q3Seconds IS NOT NULL)
             ORDER BY qualifying.qualifyId ASC;"""
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def mark_races_as_complete(self):
         """ Mark all in progress races as trained. """
@@ -784,7 +777,9 @@ class Database:
                 WHERE raceTrained IS FALSE
                     AND evaluationRace IS NOT TRUE;"""
         )
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def mark_qualifying_as_complete(self):
         """ Mark all in progress races as qualifying trained. """
@@ -795,7 +790,9 @@ class Database:
                 WHERE qualifyingTrained IS FALSE
                     AND evaluationRace IS NOT TRUE;"""
         )
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_calendar(self, year):
         """ Gets the race calendar for the given year. """
@@ -816,12 +813,16 @@ class Database:
                 ORDER BY races.round ASC;""",
             (year,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_last_race_id(self):
         """ Gets the last race with a result. """
         cursor = self.query("SELECT MAX(raceId) FROM results;")
-        return cursor.fetchone()[0]
+        result = cursor.fetchone()[0]
+        cursor.close()
+        return result
 
     def get_last_race_id_in_year(self, year):
         """ Gets the last race ID in a given season year. """
@@ -834,7 +835,9 @@ class Database:
                 WHERE races.year = %s;""",
             (year,)
         )
-        return cursor.fetchone()[0]
+        result = cursor.fetchone()[0]
+        cursor.close()
+        return result
 
     def get_drivers_standings(self, race):
         """ Gets the driver's standings at the given race. """
@@ -851,7 +854,9 @@ class Database:
                 ORDER BY position ASC;""",
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_constructors_standings(self, race):
         """ Gets the constructor's standings at the given race. """
@@ -873,7 +878,9 @@ class Database:
                 ORDER BY position ASC;""",
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_results(self, race):
         """ Gets the result's of a given race, including laps, points, position. """
@@ -901,12 +908,16 @@ class Database:
                 ORDER BY -position DESC;""",
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_last_qualifying_race_id(self):
         """ Gets the raceId of the last qualifying session. """
         cursor = self.query("SELECT MAX(raceId) FROM qualifying;")
-        return cursor.fetchone()[0]
+        result = cursor.fetchone()[0]
+        cursor.close()
+        return result
 
     def get_qualifying_results(self, race):
         """ Gets the qualifying results of a given session, including all laps. """
@@ -933,7 +944,9 @@ class Database:
                 ORDER BY -position DESC;""",
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def insert_race_log(
             self,
@@ -952,7 +965,9 @@ class Database:
             )
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_race_log(self, race_id, qualifying_predicted):
         """ Fetch a result from the log, using race id. """
@@ -965,7 +980,9 @@ class Database:
                 AND qualifyingPredicted = %s
                 ORDER BY position ASC;""",
             (race_id, qualifying_predicted,))
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def insert_qualifying_log(
             self, race_id, driver_id, constructor_id,
@@ -983,7 +1000,9 @@ class Database:
             )
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_qualifying_log(self, race_id):
         """ Fetch a result from the log, using race_id. """
@@ -1002,7 +1021,9 @@ class Database:
                 ORDER BY position ASC;""",
             (race_id,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_next_race_year_round_driver_standings(self):
         """ Gets the next race/year/round based on driver standing records. """
@@ -1018,7 +1039,9 @@ class Database:
                 ORDER BY driverStandings.raceId DESC
                 LIMIT 1;"""
             )
-        return cursor.fetchone()
+        result = cursor.fetchone()
+        cursor.close()
+        return result
 
     def insert_driver_standing(self, race_id, driver_id, points, position, position_text, wins):
         """ Insert a driver standing record with the given information. """
@@ -1030,7 +1053,9 @@ class Database:
             (race_id, driver_id, points, position, position_text, wins)
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_next_race_year_round_constructor_standings(self):
         """ Gets the next race/year/round based on constructor standing records. """
@@ -1045,7 +1070,9 @@ class Database:
                 INNER JOIN races ON constructorStandings.raceId<races.raceId
                 ORDER BY constructorStandings.raceId DESC
                 LIMIT 1;""")
-        return cursor.fetchone()
+        result = cursor.fetchone()
+        cursor.close()
+        return result
 
     def insert_constructor_standing(
             self,
@@ -1063,12 +1090,16 @@ class Database:
             )
         )
         self.database.commit()
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_evaluation_races(self):
         """ Gets the full list of evaluation raceId's. """
         cursor = self.query("SELECT raceId FROM races WHERE evaluationRace IS TRUE;")
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def mark_all_races_as_untrained(self):
         """ Marks all races as untrained. """
@@ -1076,7 +1107,9 @@ class Database:
             """UPDATE
                 races SET raceTrained = NULL;"""
         )
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def mark_all_qualifying_as_untrained(self):
         """ Marks all races as qualifying untrained. """
@@ -1084,7 +1117,9 @@ class Database:
             """UPDATE
                 races SET qualifyingTrained = NULL;"""
         )
-        return cursor.rowcount
+        result = cursor.rowcount
+        cursor.close()
+        return result
 
     def get_race_averages(self, race):
         """ Fetches the last averages for each driver. """
@@ -1110,7 +1145,9 @@ class Database:
             """,
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_race_averages_team(self, race):
         """ Fetches the last averages for each driver based on team. """
@@ -1136,7 +1173,9 @@ class Database:
             """,
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_circuit_averages(self, race):
         """ Fetches averages for driver at this circuit. """
@@ -1166,7 +1205,9 @@ class Database:
             """,
             (race, race)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_circuit_averages_team(self, race):
         """ Fetches averages for driver at this circuit per team. """
@@ -1196,7 +1237,9 @@ class Database:
             """,
             (race, race)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_championship_positions(self, race):
         """ Fetches current championship positions. """
@@ -1216,7 +1259,9 @@ class Database:
             """,
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_position_changes(self, race):
         """ Fetches the last averages for each driver. """
@@ -1243,7 +1288,9 @@ class Database:
             """,
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_form_with_drivers(self, race_id):
         """ Gets the pace averages for the qualifying at the given race. """
@@ -1284,7 +1331,9 @@ class Database:
                 WHERE raceId < %s);""",
             (race_id,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_form_circuit(self, race_id):
         """ Gets the pace averages at the circuit for the qualifying at the given race. """
@@ -1324,7 +1373,9 @@ class Database:
                 WHERE raceId < %s);""",
             (race_id, race_id,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_championship_positions(self, race):
         """ Fetches current championship positions. """
@@ -1344,7 +1395,9 @@ class Database:
             """,
             (race,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_form_average_team(self, race_id):
         """ Gets the pace averages at the circuit for the qualifying at the given race. """
@@ -1381,7 +1434,9 @@ class Database:
                 WHERE raceId < %s);""",
             (race_id,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result
 
     def get_qualifying_form_circuit_team(self, race_id):
         """ Gets the circuit pace averages at the circuit for the qualifying at the given race. """
@@ -1421,4 +1476,6 @@ class Database:
                 WHERE raceId < %s);""",
             (race_id, race_id,)
         )
-        return cursor.fetchall()
+        result = cursor.fetchall()
+        cursor.close()
+        return result

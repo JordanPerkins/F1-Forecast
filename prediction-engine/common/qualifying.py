@@ -113,7 +113,7 @@ def predict(race_id, disable_cache=False, load_model=True):
 def train(num_epochs=200, batch_size=30, load_model=True):
     """ Train qualifying model. """
     last_race_id = db.get_last_race_id()
-    db.mark_qualifiyng_as_in_progress(last_race_id)
+    db.mark_qualifying_as_in_progress(last_race_id)
     training_data = db.get_qualifying_dataset()
     model = retrieve_qualifying_model(load_model)
 
