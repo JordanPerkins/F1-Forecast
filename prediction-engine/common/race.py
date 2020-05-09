@@ -96,6 +96,7 @@ def predict(race_id, disable_cache=False, load_model=True):
     position_changes = tuples_to_dictionary(db.get_position_changes(race))
     race_averages_team = tuples_to_dictionary(db.get_race_averages_team(race))
     circuit_averages_team = tuples_to_dictionary(db.get_circuit_averages_team(race))
+    position_changes_team = tuples_to_dictionary(db.get_position_changes_team(race))
 
     race_averages_array = [
         (float(race_averages[driver][0][0]) if driver in race_averages
@@ -126,7 +127,14 @@ def predict(race_id, disable_cache=False, load_model=True):
     race_averages_team_array = [
         (float(race_averages_team[driver][0][0]) if driver in race_averages_team
          and race_averages_team[driver][0][0] is not None
-         else qualifying_grid[index])
+         else race_averages_array[index])
+        for index, driver in enumerate(driver_ids)
+    ]
+
+    position_changes_team_array = [
+        (float(position_changes_team[driver][0][0]) if driver in position_changes_team
+         and position_changes_team[driver][0][0] is not None
+         else position_changes_array[index])
         for index, driver in enumerate(driver_ids)
     ]
 
@@ -147,6 +155,7 @@ def predict(race_id, disable_cache=False, load_model=True):
         'circuit_average_form_team': np.array(circuit_averages_team_array),
         'championship_standing': np.array(championship_standing_array),
         'position_changes': np.array(position_changes_array),
+        'position_changes_team': np.array(position_changes_team_array),
         'driver': np.array(drivers),
         'constructor': np.array(constructors)
     }
@@ -206,12 +215,16 @@ def train(num_epochs=200, batch_size=30, load_model=True):
             for index, item in enumerate(db.get_race_dataset_position_changes())
         ]
         average_form_team = [
-            (float(item[0]) if item[0] is not None else grid[index])
+            (float(item[0]) if item[0] is not None else average_form[index])
             for index, item in enumerate(db.get_race_dataset_form_team())
         ]
         circuit_average_form_team = [
             (float(item[0]) if item[0] is not None else average_form_team[index])
             for index, item in enumerate(db.get_race_dataset_form_team_circuit())
+        ]
+        position_changes_team = [
+            (float(item[0]) if item[0] is not None else position_changes[index])
+            for index, item in enumerate(db.get_race_dataset_position_changes_team())
         ]
 
         logging.info("Data received from SQL, now training")
@@ -225,6 +238,7 @@ def train(num_epochs=200, batch_size=30, load_model=True):
             'circuit_average_form_team': np.array(circuit_average_form_team),
             'championship_standing': np.array(standings),
             'position_changes': np.array(position_changes),
+            'position_changes_team': np.array(position_changes_team),
             'driver': np.array(driver),
             'constructor':  np.array(constructor),
             'average_form_team': np.array(average_form_team)

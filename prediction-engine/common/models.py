@@ -28,6 +28,7 @@ def retrieve_race_model(load_model=True):
         tf.feature_column.numeric_column(key='circuit_average_form'),
         tf.feature_column.numeric_column(key='circuit_average_form_team'),
         tf.feature_column.numeric_column(key='position_changes'),
+        tf.feature_column.numeric_column(key='position_changes_team'),
         tf.feature_column.numeric_column(key='grid'),
         tf.feature_column.numeric_column(key='championship_standing'),
         tf.feature_column.indicator_column(race_feature),

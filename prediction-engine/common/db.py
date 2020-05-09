@@ -620,6 +620,39 @@ class Database:
         cursor.close()
         return result
 
+    def get_race_dataset_position_changes_team(self):
+        """ Gets the position changes for the team for the training set. """
+        cursor = self.query(
+            """
+            SELECT
+                (SELECT AVG(diff)
+                    FROM
+                        (SELECT grid-position AS diff
+                            FROM results results1
+                            WHERE results1.raceId < results.raceId
+                            AND results.constructorId = results1.constructorId
+                            AND position IS NOT NULL
+                            ORDER BY raceId DESC
+                            LIMIT 6)
+                            results2)
+                    as avg
+            FROM races
+            INNER JOIN results ON results.raceId=races.raceId
+            INNER JOIN qualifying ON qualifying.raceId=results.raceId
+            AND qualifying.driverId=results.driverId
+            WHERE raceTrained is FALSE AND evaluationRace is not TRUE
+                AND results.position IS NOT NULL AND results.position <= 20
+                AND races.year >= 2000
+                AND results.grid <= 20
+                AND (qualifying.q1Seconds IS NOT NULL
+                    OR qualifying.q2Seconds IS NOT NULL
+                    OR qualifying.q3Seconds IS NOT NULL)
+            ORDER BY results.resultId ASC;"""
+        )
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
     def get_race_dataset_form_team(self):
         """ Gets the form averages for the team for the training set. """
         cursor = self.query(
@@ -1164,7 +1197,7 @@ class Database:
                                 AND results.constructorId = results1.constructorId
                                 AND position IS NOT NULL
                                 ORDER BY raceId DESC
-                                LIMIT 3)
+                                LIMIT 6)
                                 results2)
                         as avg
                 FROM results
@@ -1280,6 +1313,34 @@ class Database:
                                 AND grid IS NOT NULL
                                 ORDER BY raceId DESC
                                 LIMIT 3)
+                                results2)
+                        as avg
+                FROM results
+                WHERE raceId = (SELECT MAX(raceId)
+                    FROM races races1
+                    WHERE races1.raceId < %s);
+            """,
+            (race,)
+        )
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def get_position_changes_team(self, race):
+        """ Fetches the position change averages for the team. """
+        cursor = self.query(
+            """
+                SELECT
+                    driverId,
+                    (SELECT AVG(diff)
+                        FROM
+                            (SELECT grid-position AS diff
+                                FROM results results1
+                                WHERE results1.raceId <= results.raceId
+                                AND results.constructorId = results1.constructorId
+                                AND position IS NOT NULL
+                                ORDER BY raceId DESC
+                                LIMIT 6)
                                 results2)
                         as avg
                 FROM results
