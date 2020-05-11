@@ -57,7 +57,236 @@ class Database:
         """ Constructor, opening a connection and setting instance. """
         if Database.__instance is None:
             self.connect()
+            self.create_results_table()
+            self.create_qualifying_table()
+            self.create_circuits_table()
+            self.create_constructor_standings_table()
+            self.create_constructors_table()
+            self.create_driver_standings_table()
+            self.create_drivers_table()
+            self.create_qualifying_prediction_table()
+            self.create_race_prediction_table()
+            self.create_races_table()
             Database.__instance = self
+
+    def create_results_table(self):
+        """ Initialises the results table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `results` (
+                `resultId` int(11) NOT NULL AUTO_INCREMENT,
+                `raceId` int(11) NOT NULL DEFAULT '0',
+                `driverId` int(11) NOT NULL DEFAULT '0',
+                `constructorId` int(11) NOT NULL DEFAULT '0',
+                `number` int(11) DEFAULT NULL,
+                `grid` int(11) NOT NULL DEFAULT '0',
+                `position` int(11) DEFAULT NULL,
+                `positionText` varchar(255) NOT NULL DEFAULT '',
+                `positionOrder` int(11) NOT NULL DEFAULT '0',
+                `points` float NOT NULL DEFAULT '0',
+                `laps` int(11) NOT NULL DEFAULT '0',
+                `time` varchar(255) DEFAULT NULL,
+                `milliseconds` int(11) DEFAULT NULL,
+                `fastestLap` int(11) DEFAULT NULL,
+                `rank` int(11) DEFAULT '0',
+                `fastestLapTime` varchar(255) DEFAULT NULL,
+                `fastestLapSpeed` varchar(255) DEFAULT NULL,
+                `statusId` int(11) NOT NULL DEFAULT '0',
+                PRIMARY KEY (`resultId`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_qualifying_table(self):
+        """ Initialises the qualifying table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `qualifying` (
+                `qualifyId` int(11) NOT NULL AUTO_INCREMENT,
+                `raceId` int(11) NOT NULL DEFAULT '0',
+                `driverId` int(11) NOT NULL DEFAULT '0',
+                `constructorId` int(11) NOT NULL DEFAULT '0',
+                `number` int(11) NOT NULL DEFAULT '0',
+                `position` int(11) DEFAULT NULL,
+                `q1` varchar(255) DEFAULT NULL,
+                `q2` varchar(255) DEFAULT NULL,
+                `q3` varchar(255) DEFAULT NULL,
+                `q1Seconds` decimal(7,3) DEFAULT NULL,
+                `q2Seconds` decimal(7,3) DEFAULT NULL,
+                `q3Seconds` decimal(7,3) DEFAULT NULL,
+                PRIMARY KEY (`qualifyId`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_circuits_table(self):
+        """ Initialises the circuits table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `circuits` (
+                `circuitId` int(11) NOT NULL AUTO_INCREMENT,
+                `circuitRef` varchar(255) NOT NULL DEFAULT '',
+                `name` varchar(255) NOT NULL DEFAULT '',
+                `location` varchar(255) DEFAULT NULL,
+                `country` varchar(255) DEFAULT NULL,
+                `lat` float DEFAULT NULL,
+                `lng` float DEFAULT NULL,
+                `alt` int(11) DEFAULT NULL,
+                `url` varchar(255) NOT NULL DEFAULT '',
+                PRIMARY KEY (`circuitId`),
+                UNIQUE KEY `url` (`url`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_constructor_standings_table(self):
+        """ Initialises the constructor standings table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `constructorStandings` (
+                `constructorStandingsId` int(11) NOT NULL AUTO_INCREMENT,
+                `raceId` int(11) NOT NULL DEFAULT '0',
+                `constructorId` int(11) NOT NULL DEFAULT '0',
+                `points` float NOT NULL DEFAULT '0',
+                `position` int(11) DEFAULT NULL,
+                `positionText` varchar(255) DEFAULT NULL,
+                `wins` int(11) NOT NULL DEFAULT '0',
+                PRIMARY KEY (`constructorStandingsId`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_constructors_table(self):
+        """ Initialises the constructors table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `constructors` (
+                `constructorId` int(11) NOT NULL AUTO_INCREMENT,
+                `constructorRef` varchar(255) NOT NULL DEFAULT '',
+                `name` varchar(255) NOT NULL DEFAULT '',
+                `nationality` varchar(255) DEFAULT NULL,
+                `url` varchar(255) NOT NULL DEFAULT '',
+                PRIMARY KEY (`constructorId`),
+                UNIQUE KEY `name` (`name`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_driver_standings_table(self):
+        """ Initialises the driver standings table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `driverStandings` (
+                `driverStandingsId` int(11) NOT NULL AUTO_INCREMENT,
+                `raceId` int(11) NOT NULL DEFAULT '0',
+                `driverId` int(11) NOT NULL DEFAULT '0',
+                `points` float NOT NULL DEFAULT '0',
+                `position` int(11) DEFAULT NULL,
+                `positionText` varchar(255) DEFAULT NULL,
+                `wins` int(11) NOT NULL DEFAULT '0',
+                PRIMARY KEY (`driverStandingsId`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_drivers_table(self):
+        """ Initialises the drivers table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `drivers` (
+                `driverId` int(11) NOT NULL AUTO_INCREMENT,
+                `driverRef` varchar(255) NOT NULL DEFAULT '',
+                `number` int(11) DEFAULT NULL,
+                `code` varchar(3) DEFAULT NULL,
+                `forename` varchar(255) NOT NULL DEFAULT '',
+                `surname` varchar(255) NOT NULL DEFAULT '',
+                `dob` date DEFAULT NULL,
+                `nationality` varchar(255) DEFAULT NULL,
+                `url` varchar(255) NOT NULL DEFAULT '',
+                PRIMARY KEY (`driverId`),
+                UNIQUE KEY `url` (`url`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_qualifying_prediction_table(self):
+        """ Initialises the qualifying prediction table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `qualifyingPredictionLog` (
+                `predictionId` int(11) NOT NULL AUTO_INCREMENT,
+                `driverId` int(11) NOT NULL,
+                `position` int(11) NOT NULL,
+                `featureHash` varchar(255) DEFAULT NULL,
+                `time` timestamp NULL DEFAULT NULL,
+                `delta` double DEFAULT NULL,
+                `features` varchar(1024) DEFAULT NULL,
+                `constructorId` int(11) NOT NULL,
+                `raceId` int(11) NOT NULL,
+                PRIMARY KEY (`predictionId`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_race_prediction_table(self):
+        """ Initialises the race prediction table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `racePredictionLog` (
+                `predictionId` int(11) NOT NULL AUTO_INCREMENT,
+                `driverId` int(11) NOT NULL,
+                `position` int(11) NOT NULL,
+                `featureHash` varchar(255) DEFAULT NULL,
+                `time` timestamp NULL DEFAULT NULL,
+                `features` varchar(1024) DEFAULT NULL,
+                `raceId` int(11) NOT NULL,
+                `qualifyingPredicted` tinyint(1) NOT NULL,
+                PRIMARY KEY (`predictionId`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        )
+        self.database.commit()
+        cursor.close()
+
+    def create_races_table(self):
+        """ Initialises the races table if it doesn't exist. """
+        cursor = self.query(
+            """
+            CREATE TABLE IF NOT EXISTS `races` (
+                `raceId` int(11) NOT NULL AUTO_INCREMENT,
+                `year` int(11) NOT NULL DEFAULT '0',
+                `round` int(11) NOT NULL DEFAULT '0',
+                `circuitId` int(11) NOT NULL DEFAULT '0',
+                `name` varchar(255) NOT NULL DEFAULT '',
+                `date` date NOT NULL DEFAULT '0000-00-00',
+                `time` time DEFAULT NULL,
+                `url` varchar(255) DEFAULT NULL,
+                `qualifyingTrained` tinyint(1) DEFAULT NULL,
+                `raceTrained` tinyint(1) DEFAULT NULL,
+                `evaluationRace` tinyint(1) DEFAULT NULL,
+                PRIMARY KEY (`raceId`),
+                UNIQUE KEY `url` (`url`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8
+            """
+        )
+        self.database.commit()
+        cursor.close()
 
     def get_race_by_id(self, race_id):
         """ Gets the name of a race using the ID. """
