@@ -52,16 +52,17 @@ def insert_circuit(circuit):
 
 def insert_results(race_id, results):
     """ Insert's all results given results object from API """
-    drivers = tuples_to_dictionary(db.get_driver_references())
-    constructors = tuples_to_dictionary(db.get_constructor_references())
     total_inserted = 0
     for result in results:
+        drivers = tuples_to_dictionary(db.get_driver_references())
+        constructors = tuples_to_dictionary(db.get_constructor_references())
         driver_id = (drivers[result['Driver']['driverId']][0][0]
                      if result['Driver']['driverId'] in drivers
                      else insert_driver(result['Driver']))
         constructor_id = (constructors[result['Constructor']['constructorId']][0][0]
                           if result['Constructor']['constructorId'] in constructors
                           else insert_constructor(result['Constructor']))
+
         inserted = db.insert_result(
             race_id,
             driver_id,
@@ -73,8 +74,8 @@ def insert_results(race_id, results):
             result['position'],
             result['points'],
             result['laps'],
-            result['Time']['time'],
-            result['Time']['millis'],
+            (result['Time']['time'] if 'Time' in result else None),
+            (result['Time']['millis'] if 'Time' in result else None),
             result['FastestLap']['lap'],
             result['FastestLap']['rank'],
             result['FastestLap']['Time']['time'],
@@ -87,9 +88,9 @@ def insert_results(race_id, results):
 
 def insert_driver_standings(race_id, results):
     """ Insert's all driver standings given results object from API """
-    drivers = tuples_to_dictionary(db.get_driver_references())
     total_inserted = 0
     for result in results:
+        drivers = tuples_to_dictionary(db.get_driver_references())
         driver_id = (drivers[result['Driver']['driverId']][0][0]
                      if result['Driver']['driverId'] in drivers
                      else insert_driver(result['Driver']))
@@ -108,14 +109,14 @@ def insert_driver_standings(race_id, results):
 
 def insert_constructor_standings(race_id, results):
     """ Insert's all constructor standings given results object from API """
-    constructors = tuples_to_dictionary(db.get_constructor_references())
     total_inserted = 0
     for result in results:
+        constructors = tuples_to_dictionary(db.get_constructor_references())
         constructor_id = (constructors[result['Constructor']['constructorId']][0][0]
                           if result['Constructor']['constructorId'] in constructors
                           else insert_constructor(result['Constructor']))
 
-        inserted = db.insert_driver_standing(
+        inserted = db.insert_constructor_standing(
             race_id,
             constructor_id,
             result['points'],
@@ -137,10 +138,10 @@ def lap_to_seconds(lap):
 
 def insert_qualifying_results(race_id, results):
     """ Inserts all qualifying results given results object from API """
-    drivers = tuples_to_dictionary(db.get_driver_references())
-    constructors = tuples_to_dictionary(db.get_constructor_references())
     total_inserted = 0
     for result in results:
+        drivers = tuples_to_dictionary(db.get_driver_references())
+        constructors = tuples_to_dictionary(db.get_constructor_references())
         driver_id = (drivers[result['Driver']['driverId']][0][0]
                      if result['Driver']['driverId'] in drivers
                      else insert_driver(result['Driver']))
@@ -154,12 +155,12 @@ def insert_qualifying_results(race_id, results):
             constructor_id,
             result['number'],
             result['position'],
-            result['Q1'],
-            result['Q2'],
-            result['Q3'],
-            lap_to_seconds(result['Q1']),
-            lap_to_seconds(result['Q2']),
-            lap_to_seconds(result['Q3'])
+            (result['Q1'] if 'Q1' in result else None),
+            (result['Q2'] if 'Q2' in result else None),
+            (result['Q3'] if 'Q3' in result else None),
+            (lap_to_seconds(result['Q1']) if 'Q1' in result else None),
+            (lap_to_seconds(result['Q2']) if 'Q2' in result else None),
+            (lap_to_seconds(result['Q3']) if 'Q3' in result else None),
         )
         if inserted == 1:
             total_inserted += 1
@@ -211,7 +212,6 @@ def check_for_races():
 def check_for_qualifying():
     """ Calls API for new qualifying results, and then calls insertion function. """
     year, race_round, race_id, date = db.get_next_race_year_round_qualifying()
-    print(date)
     request = requests.get(ERGAST_API_URL+str(year)+'/'+str(race_round)+'/qualifying.json')
     json = request.json()
     if 'MRData' in json:
@@ -240,7 +240,6 @@ def check_for_calendar_updates():
 def check_for_drivers_standings():
     """ Calls API for new driver standings, and then calls insertion function. """
     year, race_round, race_id, date = db.get_next_race_year_round_driver_standings()
-    print(date)
     request = requests.get(ERGAST_API_URL+str(year)+'/'+str(race_round)+'/driverStandings.json')
     json = request.json()
     if 'MRData' in json:
@@ -257,7 +256,6 @@ def check_for_drivers_standings():
 def check_for_constructor_standings():
     """ Calls API for new constructor standings, and then calls insertion function. """
     year, race_round, race_id, date = db.get_next_race_year_round_constructor_standings()
-    print(date)
     request = requests.get((ERGAST_API_URL+str(year)+'/'+str(race_round)
                             +'/constructorStandings.json'))
     json = request.json()

@@ -418,7 +418,7 @@ class Database:
                 INSERT INTO results
                     (raceId, driverId, constructorId, number, grid, position,
                         positionText,positionOrder, points, laps, time,
-                        milliseconds, fastestLap, rank, fastestLapTime,
+                        milliseconds, fastestLap, `rank`, fastestLapTime,
                         fastestLapSpeed, statusId)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s)""",
@@ -1165,7 +1165,6 @@ class Database:
                     points,
                     laps
                 FROM results
-                INNER JOIN status ON status.statusId=results.statusId
                 INNER JOIN drivers ON drivers.driverId=results.driverId
                 WHERE raceId = %s
                 ORDER BY -position DESC;""",
