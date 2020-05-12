@@ -64,6 +64,7 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     logging.info("Making prediction for race with ID %s", str(race))
 
+    # Check if qualifying results exist for this race, and predict if they don't
     qualifying_results = db.get_qualifying_results_with_driver(race)
     if len(qualifying_results) > 0:
         logging.info("Qualifying results exist for race with ID %s", str(race))
@@ -90,6 +91,7 @@ def predict(race_id, disable_cache=False, load_model=True):
     driver_ids = [result[0] for result in qualifying_results]
     drivers = [result[1] for result in qualifying_results]
 
+    # Calculate the rest of the features for the retrieved drivers
     race_averages = tuples_to_dictionary(db.get_race_averages(race))
     circuit_averages = tuples_to_dictionary(db.get_circuit_averages(race))
     standings = tuples_to_dictionary(db.get_championship_positions(race))
@@ -98,6 +100,7 @@ def predict(race_id, disable_cache=False, load_model=True):
     circuit_averages_team = tuples_to_dictionary(db.get_circuit_averages_team(race))
     position_changes_team = tuples_to_dictionary(db.get_position_changes_team(race))
 
+    # Ensure all features are valid types
     race_averages_array = [
         (float(race_averages[driver][0][0]) if driver in race_averages
          and race_averages[driver][0][0] is not None
@@ -162,6 +165,7 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     feature_hash, feature_string = generate_feature_hash(features)
 
+    # Retrieve model from S3
     model = retrieve_race_model(load_model)
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -170,6 +174,7 @@ def predict(race_id, disable_cache=False, load_model=True):
         shuffle=False
     )
 
+    # Obtain predictions, and sort  into final ranking
     predictions = model.predict(input_fn=input_fn)
     ranking = results_to_ranking(predictions, len(drivers_to_predict))
     driver_ranking = [list(drivers_to_predict[position[1]]) for position in ranking]
@@ -187,6 +192,8 @@ def predict(race_id, disable_cache=False, load_model=True):
 
 def train(num_epochs=200, batch_size=30, load_model=True):
     """ Train race model. """
+
+    # Mark as in progress, and receive training data
     last_race_id = db.get_last_race_id()
     db.mark_races_as_in_progress(last_race_id)
     training_data = db.get_race_dataset()
@@ -199,8 +206,10 @@ def train(num_epochs=200, batch_size=30, load_model=True):
     driver = [item[4] for item in training_data]
     constructor = [item[5] for item in training_data]
 
+    # If races exist, proceed with training
     if len(races) > 0:
 
+        # Get the rest of the features
         average_form = [
             (float(item[0]) if item[0] is not None else grid[index])
             for index, item in enumerate(db.get_race_dataset_form())
@@ -252,10 +261,12 @@ def train(num_epochs=200, batch_size=30, load_model=True):
             shuffle=True
         )
 
+        # Run training
         model.train(input_fn=train_input_fn)
 
         db.mark_races_as_complete()
 
+        # Upload new model
         logging.info("Training complete, now uploading model")
         upload_race_model()
         return True

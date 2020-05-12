@@ -22,7 +22,7 @@ def qualifying_prediction(race_id=None):
         abort(500, description="Internal Server Error")
 
 def race_prediction(race_id=None):
-    """ The /predict/racecontroller. """
+    """ The /predict/race controller. """
     try:
         ranking, race_name, race_year, race_id = race_predict(race_id)
         return jsonify({

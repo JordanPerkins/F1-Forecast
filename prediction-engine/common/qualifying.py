@@ -36,6 +36,7 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     logging.info('Making prediction for race with ID %s and name %s', str(race), race_name)
 
+    # Gets the drivers to predict for, alongside average form features.
     averages_with_driver = db.get_qualifying_form_with_drivers(race)
     drivers_to_predict = [list(result)[:len(result) - 1] for result in averages_with_driver]
     average_form = [float(list(result)[len(result) - 1]) for result in averages_with_driver]
@@ -44,11 +45,13 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     driver_ids = [result[0] for result in averages_with_driver]
 
+    # Calculate rest of the features
     circuit_averages = tuples_to_dictionary(db.get_qualifying_form_circuit(race))
     championship_standing = tuples_to_dictionary(db.get_qualifying_championship_positions(race))
     average_form_team = tuples_to_dictionary(db.get_qualifying_form_average_team(race))
     circuit_averages_team = tuples_to_dictionary(db.get_qualifying_form_circuit_team(race))
 
+    # Ensure all features are valid types
     circuit_averages_array = ([
         (float(circuit_averages[driver][0][0]) if circuit_averages[driver][0][0] is not None
          else float(average_form[index]))
@@ -82,6 +85,7 @@ def predict(race_id, disable_cache=False, load_model=True):
 
     fe_hash, fe_string = generate_feature_hash(features)
 
+    # Fetch model from S3
     model = retrieve_qualifying_model(load_model)
 
     input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -90,6 +94,7 @@ def predict(race_id, disable_cache=False, load_model=True):
         shuffle=False
     )
 
+    # Run prediction, and sort into final result
     predictions = model.predict(input_fn=input_fn)
     ranking = results_to_ranking(predictions)
     fastest_lap = min([item[1] for item in ranking])
@@ -112,6 +117,8 @@ def predict(race_id, disable_cache=False, load_model=True):
 
 def train(num_epochs=200, batch_size=30, load_model=True):
     """ Train qualifying model. """
+
+    # Mark as in progress, get the training data
     last_race_id = db.get_last_race_id()
     db.mark_qualifying_as_in_progress(last_race_id)
     training_data = db.get_qualifying_dataset()
@@ -122,8 +129,10 @@ def train(num_epochs=200, batch_size=30, load_model=True):
     driver = [item[2] for item in training_data]
     constructor = [item[3] for item in training_data]
 
+    # If new data is available, run training
     if len(races) > 0:
 
+        # Get the rest of the training data, replacing missing values
         average_form = [
             (float(item[0]) if item[0] is not None else results[index])
             for index, item in enumerate(db.get_qualifying_dataset_form())]
@@ -141,8 +150,6 @@ def train(num_epochs=200, batch_size=30, load_model=True):
         circuit_average_form_team = [
             (float(item[0]) if item[0] is not None else average_form_team[index])
             for index, item in enumerate(db.get_qualifying_dataset_form_team_circuit())]
-
-        print(championship_standing)
 
         logging.info("Data received from SQL, now training qualifying")
 
@@ -165,10 +172,12 @@ def train(num_epochs=200, batch_size=30, load_model=True):
             shuffle=True
         )
 
+        # Train model
         model.train(input_fn=train_input_fn)
 
         db.mark_qualifying_as_complete()
 
+        # Upload new model to S4
         logging.info("Training complete, now uploading model")
         upload_qualifying_model()
         return True

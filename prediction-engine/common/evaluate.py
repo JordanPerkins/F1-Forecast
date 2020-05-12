@@ -9,7 +9,10 @@ from .utils import tuples_to_dictionary
 db = Database.get_database()
 
 def evaluate(race=True, races=None, override_predictions=None):
-    """ Computes the evaluation figures for the network """
+    """ Computes the evaluation figures for the network. These
+        are % winners correct, % podiums correct, % podiums correct
+        (any order), % positions correct, Spearman's Correlation Rank
+        Coefficient. """
     winners_correct = 0
     podium_correct = 0
     podium_any_order_correct = 0
@@ -18,6 +21,7 @@ def evaluate(race=True, races=None, override_predictions=None):
     total_positions = 0
     all_coef = []
 
+    # If not passed a list of races, use races marked as evaluationRaces.
     if races:
         evaluation_races = races
     else:
@@ -26,6 +30,8 @@ def evaluate(race=True, races=None, override_predictions=None):
             for evaluation_race in db.get_evaluation_races()
         ]
 
+    # Iterate through races, calling prediction function (or using override)
+    # and comparing with the actual result in the database.
     for race_id in evaluation_races:
         if race:
             actual_result = tuples_to_dictionary(db.get_race_results(race_id))
@@ -57,6 +63,8 @@ def evaluate(race=True, races=None, override_predictions=None):
                 if (driver[0] in actual_result
                     and actual_result[driver[0]][0][position_index] is not None)
             ]
+
+        # Update counts for metrics
         system_ranking = list(range(1, len(actual_ranking) + 1))
 
         coef, _ = spearmanr(actual_ranking, system_ranking)
@@ -79,6 +87,7 @@ def evaluate(race=True, races=None, override_predictions=None):
         total_positions += len(system_ranking)
         num_races += 1
 
+    # Calculate final metrics
     percentage_winners_correct = round((winners_correct / num_races), 3) * 100
     percentage_podium_correct = round((podium_correct / num_races), 3) * 100
     percentage_podium_any_order_correct = round((podium_any_order_correct / num_races), 3) * 100
